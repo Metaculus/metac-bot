@@ -13,6 +13,9 @@ from jinja2 import Template
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.llms.ollama import Ollama
+from llama_index.llms.anthropic import Anthropic
+from llama_index.core import Settings
+
 import argparse
 
 
@@ -184,10 +187,18 @@ def get_model(model_name: str):
             return OpenAI(
                 api_key=config("OPENAI_API_KEY", default=""), model=model_name
             )
-        case "gpt-3.5":
+        case "gpt-3.5-turbo":
             return OpenAI(
                 api_key=config("OPENAI_API_KEY", default=""), model=model_name
             )
+        case "anthropic":
+            tokenizer = Anthropic().tokenizer
+            Settings.tokenizer = tokenizer
+            return Anthropic(
+                api_key=config("ANTHROPIC_API_KEY", default=""),
+                model="claude-3-opus-20240229",
+            )
+
     return None
 
 
@@ -232,7 +243,7 @@ async def main():
     parser.add_argument(
         "--llm_model",
         type=str,
-        choices=["gpt-4o", "gpt-3.5", "ollama:llama3"],
+        choices=["gpt-4o", "gpt-3.5-turbo", "anthropic"],
         default="gpt-4o",
         help="The model to use, one of the options listed",
     )
@@ -278,12 +289,19 @@ async def main():
             for question in questions
         ]
 
+        for question, prompt in zip(questions, prompts):
+            print(
+                f"\n\n*****\nPrompt for question {question['id']}/{question['title']}:\n{prompt} \n\n\n\n"
+            )
+
         results = await asyncio.gather(
             *[llm_predict_once(llm_model, prompt) for prompt in prompts],
         )
 
         for (prediction, reasoning), question in zip(results, questions):
-            print(f"Question id {question['id']} prediction: {prediction}")
+            print(
+                f"\n\n****\nForecast for {question['id']}: {prediction}, Rationale:\n {reasoning}"
+            )
             post_question_prediction(metac_api_info, question["id"], float(prediction))
             post_question_comment(metac_api_info, question["id"], reasoning)
 
