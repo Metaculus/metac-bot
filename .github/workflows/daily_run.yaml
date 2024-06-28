@@ -29,11 +29,16 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
-      - name: Run the script
+      - name: Run all 3 bots
         if: always()
-        run: poetry run python forecast_bot.py
-        env: # Or as an environment variable
+        run: |
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN_B1 --llm_model gpt-4o --use_perplexity --number_forecasts 5
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN_B2 --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5
+        env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          METACULUS_TOKEN_B1: ${{ secrets.METACULUS_TOKEN_B1 }}
+          METACULUS_TOKEN_B2: ${{ secrets.METACULUS_TOKEN_B2 }}
+          METACULUS_TOKEN_B3: ${{ secrets.METACULUS_TOKEN_B3 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
