@@ -269,6 +269,10 @@ async def main():
 
     llm_model = get_model(args.llm_model)
 
+    if args.number_forecasts < 1:
+        print("number_forecasts must be larger than 0")
+        return
+
     offset = 0
     while True:
         questions = list_questions(
@@ -294,16 +298,35 @@ async def main():
                 f"\n\n*****\nPrompt for question {question['id']}/{question['title']}:\n{prompt} \n\n\n\n"
             )
 
-        results = await asyncio.gather(
-            *[llm_predict_once(llm_model, prompt) for prompt in prompts],
-        )
-
-        for (prediction, reasoning), question in zip(results, questions):
-            print(
-                f"\n\n****\nForecast for {question['id']}: {prediction}, Rationale:\n {reasoning}"
+        all_predictions = {q["id"]: [] for q in questions}
+        for round in range(args.number_forecasts):
+            results = await asyncio.gather(
+                *[llm_predict_once(llm_model, prompt) for prompt in prompts],
             )
-            post_question_prediction(metac_api_info, question["id"], float(prediction))
-            post_question_comment(metac_api_info, question["id"], reasoning)
+
+            for (prediction, reasoning), question in zip(results, questions):
+                id = question["id"]
+                print(
+                    f"\n\n****\n(round {round})Forecast for {id}: {prediction}, Rationale:\n {reasoning}"
+                )
+                if prediction is not None:
+                    post_question_prediction(metac_api_info, id, float(prediction))
+                    post_question_comment(metac_api_info, id, reasoning)
+                    all_predictions[id].append(float(prediction))
+
+        if args.number_forecasts > 1:
+            for q in questions:
+                id = q["id"]
+                q_predictions = all_predictions[id]
+                if len(q_predictions) < 1:
+                    continue
+                avg = sum(q_predictions) / len(q_predictions)
+                post_question_prediction(metac_api_info, id, avg)
+                post_question_comment(
+                    metac_api_info,
+                    id,
+                    f"Averaged the last {len(q_predictions)} predictions",
+                )
 
 
 if __name__ == "__main__":
