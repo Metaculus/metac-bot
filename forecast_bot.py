@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 
 from attr import dataclass
 import requests
@@ -97,6 +98,10 @@ def post_question_comment(api_info: MetacApiInfo, question_id: int, comment_text
         },
         headers={"Authorization": f"Token {api_info.token}"},
     )
+    if not response.ok:
+        logging.error(
+            f"Failed posting a comment on question {question_id}: {response.text}"
+        )
     return response.json, response.ok
 
 
@@ -112,6 +117,11 @@ def post_question_prediction(
         json={"prediction": float(prediction_percentage) / 100},
         headers={"Authorization": f"Token {api_info.token}"},
     )
+    response.raise_for_status()
+    if not response.ok:
+        logging.error(
+            f"Failed posting a prediction on question {question_id}: {response.text}"
+        )
     return response.json, response.ok
 
 
