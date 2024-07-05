@@ -184,6 +184,7 @@ You do not produce forecasts yourself.
     response = requests.post(url=url, json=payload, headers=headers)
     response.raise_for_status()
     content = response.json()["choices"][0]["message"]["content"]
+    print(f"\n\nCalled perplexity with:\n----\n{json.dumps(payload)}\n---\n, and got\n:", content)
     return content
 
 
