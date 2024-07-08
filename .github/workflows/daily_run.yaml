@@ -2,7 +2,7 @@ name: run daily
 
 on:
   schedule:
-    - cron: "0 0 * * *" # every day
+    - cron: "0 18 * * *" # every day, 10:40 PST
   workflow_dispatch:
 
 jobs:
