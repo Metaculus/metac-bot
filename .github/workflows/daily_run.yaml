@@ -34,6 +34,7 @@ jobs:
         run: |
           poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN_B1 --llm_model gpt-4o --use_perplexity --number_forecasts 5
           poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN_B2 --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN_B3 --llm_model anthropic --use_perplexity --number_forecasts 5
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
           METACULUS_TOKEN_B1: ${{ secrets.METACULUS_TOKEN_B1 }}

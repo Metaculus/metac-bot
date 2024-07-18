@@ -203,7 +203,7 @@ def get_model(model_name: str):
             Settings.tokenizer = tokenizer
             return Anthropic(
                 api_key=config("ANTHROPIC_API_KEY", default=""),
-                model="claude-3-opus-20240229",
+                model="claude-3-5-sonnet-20240620",
             )
 
     return None
