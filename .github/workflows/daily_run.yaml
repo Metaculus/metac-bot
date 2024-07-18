@@ -41,6 +41,7 @@ jobs:
           METACULUS_TOKEN_B2: ${{ secrets.METACULUS_TOKEN_B2 }}
           METACULUS_TOKEN_B3: ${{ secrets.METACULUS_TOKEN_B3 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
