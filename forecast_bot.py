@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import statistics
 
 from attr import dataclass
 import requests
@@ -327,12 +328,12 @@ async def main():
                 q_predictions = all_predictions[id]
                 if len(q_predictions) < 1:
                     continue
-                avg = sum(q_predictions) / len(q_predictions)
-                post_question_prediction(metac_api_info, id, avg)
+                median = statistics.median(q_predictions)
+                post_question_prediction(metac_api_info, id, median)
                 post_question_comment(
                     metac_api_info,
                     id,
-                    f"Averaged the last {len(q_predictions)} predictions",
+                    f"Computed the median of the last {len(q_predictions)} predictions: {median}",
                 )
 
 
