@@ -69,12 +69,15 @@ def build_prompt(question_details, summary_report=None):
     return prompt_jinja.render(params)
 
 
+def clamp(x, a, b):
+    return min(b, max(a, x))
+
 def find_number_before_percent(s):
     # Use a regular expression to find all numbers followed by a '%'
     matches = re.findall(r"(\d+)%", s)
     if matches:
         # Return the last number found before a '%'
-        return int(matches[-1])
+        return clamp(int(matches[-1]), 1, 99)
     else:
         # Return None if no number found
         return None
