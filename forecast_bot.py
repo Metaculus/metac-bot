@@ -296,12 +296,19 @@ async def main():
 
         print("Handling questions: ", [q["id"] for q in questions])
 
-        prompts = [
-            build_prompt(
+        pp_questions = [
+            (
                 question,
                 call_perplexity(question["title"]) if args.use_perplexity else None,
             )
             for question in questions
+        ]
+        prompts = [
+            build_prompt(
+                question,
+                pp_result,
+            )
+            for question, pp_result in pp_questions
         ]
 
         for question, prompt in zip(questions, prompts):
@@ -338,6 +345,14 @@ async def main():
                     id,
                     f"Computed the median of the last {len(q_predictions)} predictions: {median}",
                 )
+
+        for question, perplexity_result in pp_questions:
+            id = q["id"]
+            post_question_comment(
+                metac_api_info,
+                id,
+                f"##Used perplexity info:\n\n {perplexity_result}",
+            )
 
 
 if __name__ == "__main__":
