@@ -72,6 +72,7 @@ def build_prompt(question_details, summary_report=None):
 def clamp(x, a, b):
     return min(b, max(a, x))
 
+
 def find_number_before_percent(s):
     # Use a regular expression to find all numbers followed by a '%'
     matches = re.findall(r"(\d+)%", s)
@@ -188,7 +189,10 @@ You do not produce forecasts yourself.
     response = requests.post(url=url, json=payload, headers=headers)
     response.raise_for_status()
     content = response.json()["choices"][0]["message"]["content"]
-    print(f"\n\nCalled perplexity with:\n----\n{json.dumps(payload)}\n---\n, and got\n:", content)
+    print(
+        f"\n\nCalled perplexity with:\n----\n{json.dumps(payload)}\n---\n, and got\n:",
+        content,
+    )
     return content
 
 
