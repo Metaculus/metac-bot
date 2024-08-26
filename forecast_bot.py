@@ -347,7 +347,7 @@ async def main():
                 )
 
         for question, perplexity_result in pp_questions:
-            id = q["id"]
+            id = question["id"]
             post_question_comment(
                 metac_api_info,
                 id,
