@@ -56,3 +56,12 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
+      - name: Run with o1-preview
+        run: |
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model 1o-preview --use_perplexity --number_forecasts 5
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B4 }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
