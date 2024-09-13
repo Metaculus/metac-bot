@@ -297,12 +297,12 @@ async def main():
         questions = list_questions(
             metac_api_info, args.tournament_id, offset=offset, count=5
         )
+        print("Handling questions: ", [q["id"] for q in questions])
         if len(questions) < 1:
             break
 
         offset += len(questions)
 
-        print("Handling questions: ", [q["id"] for q in questions])
 
         pp_questions = [
             (
