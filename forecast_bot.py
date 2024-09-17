@@ -213,7 +213,7 @@ def get_model(model_name: str):
                 api_key=config("ANTHROPIC_API_KEY", default=""),
                 model="claude-3-5-sonnet-20240620",
             )
-        case "1o-preview":
+        case "o1-preview":
             return OpenAI(
                 api_key=config("OPENAI_API_KEY", default=""), model=model_name
             )
@@ -262,7 +262,7 @@ async def main():
     parser.add_argument(
         "--llm_model",
         type=str,
-        choices=["gpt-4o", "gpt-3.5-turbo", "anthropic", "1o-preview"],
+        choices=["gpt-4o", "gpt-3.5-turbo", "anthropic", "o1-preview"],
         default="gpt-4o",
         help="The model to use, one of the options listed",
     )
@@ -302,7 +302,6 @@ async def main():
             break
 
         offset += len(questions)
-
 
         pp_questions = [
             (
