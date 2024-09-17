@@ -172,7 +172,7 @@ def call_perplexity(query):
         "content-type": "application/json",
     }
     payload = {
-        "model": "llama-3-sonar-large-32k-chat",
+        "model": "llama-3.1-sonar-large-128k-chat",
         "messages": [
             {
                 "role": "system",
