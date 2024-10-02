@@ -306,13 +306,18 @@ async def main():
         pp_questions = [
             (
                 question,
-                call_perplexity(question["title"]) if args.use_perplexity else None,
+                call_perplexity(question["question"]["title"]) if args.use_perplexity else None,
             )
             for question in questions
         ]
         prompts = [
             build_prompt(
-                question,
+                {
+                    "title": question["question"]["title"],
+                    "description": question["question"]["description"],
+                    "resolution_criteria": question["question"].get("resolution_criteria", ""),
+                    "fine_print": question["question"].get("fine_print", ""),
+                },
                 pp_result,
             )
             for question, pp_result in pp_questions
@@ -320,7 +325,7 @@ async def main():
 
         for question, prompt in zip(questions, prompts):
             print(
-                f"\n\n*****\nPrompt for question {question['id']}/{question['title']}:\n{prompt} \n\n\n\n"
+                f"\n\n*****\nPrompt for question {question['id']}/{question['question']['title']}:\n{prompt} \n\n\n\n"
             )
 
         all_predictions = {q["id"]: [] for q in questions}
