@@ -257,7 +257,7 @@ async def main():
     parser.add_argument(
         "--metac_token_env_name",
         type=str,
-        help="The name of the env variable where to read the metaculus toekn from",
+        help="The name of the env variable where to read the metaculus token from",
         default="METACULUS_TOKEN",
     )
     parser.add_argument(
@@ -304,13 +304,15 @@ async def main():
 
         offset += len(questions)
 
-        pp_questions = [
+        questions_with_news = [
             (
                 question,
                 call_perplexity(question["question"]["title"]) if args.use_perplexity else None,
             )
             for question in questions
         ]
+
+
         prompts = [
             build_prompt(
                 {
@@ -319,52 +321,61 @@ async def main():
                     "resolution_criteria": question["question"].get("resolution_criteria", ""),
                     "fine_print": question["question"].get("fine_print", ""),
                 },
-                pp_result,
+                news_summary,
             )
-            for question, pp_result in pp_questions
+            for question, news_summary in questions_with_news
         ]
 
-        for question, prompt in zip(questions, prompts):
+        for (question, _), prompt in zip(questions_with_news, prompts):
             print(
                 f"\n\n*****\nPrompt for question {question['id']}/{question['question']['title']}:\n{prompt} \n\n\n\n"
             )
 
-        all_predictions = {q["id"]: [] for q in questions}
+        all_predictions = {q["id"]: [] for (q, _) in questions_with_news}
+
+        # forecast, and allow multiple runs to be averaged to get a single forecast
         for round in range(args.number_forecasts):
             results = await asyncio.gather(
                 *[llm_predict_once(llm_model, prompt) for prompt in prompts],
             )
 
-            for (prediction, reasoning), question in zip(results, questions):
+            for (prediction, reasoning), (question, _) in zip(results, questions_with_news):
                 id = question["id"]
                 print(
                     f"\n\n****\n(round {round})Forecast for {id}: {prediction}, Rationale:\n {reasoning}"
                 )
                 if prediction is not None:
-                    post_question_prediction(metac_api_info, id, float(prediction))
-                    post_question_comment(metac_api_info, id, reasoning)
                     all_predictions[id].append(float(prediction))
+                    if args.submit_predictions:
+                        post_question_prediction(metac_api_info, id, float(prediction))
+                        post_question_comment(metac_api_info, id, reasoning)
+                        print(f"Posted prediction for {id}")
 
+        # compute median, make final forecast, and submit a comment about it
         if args.number_forecasts > 1:
-            for q in questions:
-                id = q["id"]
+            for question, _ in questions_with_news:
+                id = question["id"]
                 q_predictions = all_predictions[id]
                 if len(q_predictions) < 1:
                     continue
                 median = statistics.median(q_predictions)
-                post_question_prediction(metac_api_info, id, median)
+                if args.submit_predictions:
+                    post_question_prediction(metac_api_info, id, median)
+                    post_question_comment(
+                        metac_api_info,
+                        id,
+                        f"Computed the median of the last {len(q_predictions)} predictions: {median}",
+                    )
+                    print(f"Posted final forecast for {id}")
+
+        # post IR info as a separate comment
+        for question, perplexity_result in questions_with_news:
+            id = question["id"]
+            if args.submit_predictions:
                 post_question_comment(
                     metac_api_info,
                     id,
-                    f"Computed the median of the last {len(q_predictions)} predictions: {median}",
-                )
-
-        for question, perplexity_result in pp_questions:
-            id = question["id"]
-            post_question_comment(
-                metac_api_info,
-                id,
-                f"##Used perplexity info:\n\n {perplexity_result}",
+                    f"##Used perplexity info:\n\n {perplexity_result}",
             )
 
 
