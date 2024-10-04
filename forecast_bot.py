@@ -151,6 +151,7 @@ def list_questions(api_info: MetacApiInfo, tournament_id: int, offset=0, count=1
         "forecast_type": "binary",
         "project": tournament_id,
         "status": "open",
+        "format": "json",
         "type": "forecast",
         "include_description": "true",
     }
@@ -306,7 +307,7 @@ async def main():
         questions_with_news = [
             (
                 question,
-                call_perplexity(question["title"]) if args.use_perplexity else None,
+                call_perplexity(question["question"]["title"]) if args.use_perplexity else None,
             )
             for question in questions
         ]
@@ -327,7 +328,7 @@ async def main():
 
         for (question, _), prompt in zip(questions_with_news, prompts):
             print(
-                f"\n\n*****\nPrompt for question {question['id']}/{question['title']}:\n{prompt} \n\n\n\n"
+                f"\n\n*****\nPrompt for question {question['id']}/{question['question']['title']}:\n{prompt} \n\n\n\n"
             )
 
         all_predictions = {q["id"]: [] for (q, _) in questions_with_news}
