@@ -151,6 +151,7 @@ def list_questions(api_info: MetacApiInfo, tournament_id: int, offset=0, count=1
         "forecast_type": "binary",
         "project": tournament_id,
         "status": "open",
+        "format": "json",
         "type": "forecast",
         "include_description": "true",
     }
@@ -270,7 +271,7 @@ async def main():
         "--metac_base_url",
         type=str,
         help="The base URL for the metaculus API",
-        default=config("API_BASE_URL", default="https://metaculus.com/api2", cast=str),
+        default=config("API_BASE_URL", default="https://beta.metaculus.com/api2", cast=str),
     )
     parser.add_argument(
         "--tournament_id",
@@ -306,13 +307,18 @@ async def main():
         pp_questions = [
             (
                 question,
-                call_perplexity(question["title"]) if args.use_perplexity else None,
+                call_perplexity(question["question"]["title"]) if args.use_perplexity else None,
             )
             for question in questions
         ]
         prompts = [
             build_prompt(
-                question,
+                {
+                    "title": question["question"]["title"],
+                    "description": question["question"]["description"],
+                    "resolution_criteria": question["question"].get("resolution_criteria", ""),
+                    "fine_print": question["question"].get("fine_print", ""),
+                },
                 pp_result,
             )
             for question, pp_result in pp_questions
@@ -320,7 +326,7 @@ async def main():
 
         for question, prompt in zip(questions, prompts):
             print(
-                f"\n\n*****\nPrompt for question {question['id']}/{question['title']}:\n{prompt} \n\n\n\n"
+                f"\n\n*****\nPrompt for question {question['id']}/{question['question']['title']}:\n{prompt} \n\n\n\n"
             )
 
         all_predictions = {q["id"]: [] for q in questions}
