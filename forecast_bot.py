@@ -151,6 +151,7 @@ def list_questions(api_info: MetacApiInfo, tournament_id: int, offset=0, count=1
         "forecast_type": "binary",
         "project": tournament_id,
         "status": "open",
+        "format": "json",
         "type": "forecast",
         "include_description": "true",
     }
@@ -270,7 +271,7 @@ async def main():
         "--metac_base_url",
         type=str,
         help="The base URL for the metaculus API",
-        default=config("API_BASE_URL", default="https://metaculus.com/api2", cast=str),
+        default=config("API_BASE_URL", default="https://beta.metaculus.com/api2", cast=str),
     )
     parser.add_argument(
         "--tournament_id",
