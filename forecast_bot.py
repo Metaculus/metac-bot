@@ -270,7 +270,7 @@ async def main():
         "--metac_base_url",
         type=str,
         help="The base URL for the metaculus API",
-        default=config("API_BASE_URL", default="https://metaculus.com/api2", cast=str),
+        default=config("API_BASE_URL", default="https://beta.metaculus.com/api2", cast=str),
     )
     parser.add_argument(
         "--tournament_id",
@@ -348,6 +348,7 @@ async def main():
                     if args.submit_predictions:
                         post_question_prediction(metac_api_info, id, float(prediction))
                         post_question_comment(metac_api_info, id, reasoning)
+                        print(f"Posted prediction for {id}")
 
         # compute median, make final forecast, and submit a comment about it
         if args.number_forecasts > 1:
@@ -364,6 +365,7 @@ async def main():
                         id,
                         f"Computed the median of the last {len(q_predictions)} predictions: {median}",
                     )
+                    print(f"Posted final forecast for {id}")
 
         # post IR info as a separate comment
         for question, perplexity_result in questions_with_news:
