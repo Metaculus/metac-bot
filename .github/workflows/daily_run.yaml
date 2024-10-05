@@ -1,14 +1,15 @@
-name: run daily
+name: Daily Build
 
 on:
   schedule:
-    - cron: "0 15 * * *" # every day, 11:0A EST
-  workflow_dispatch:
+    - cron: "0 15 * * *" # every day, 11:00 EST
 
+# Daily job to run all bots
 jobs:
-  build:
+  daily_build:
     runs-on: ubuntu-latest
     steps:
+      # setup repository with all necessary dependencies
       - name: Check out repository
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -28,9 +29,10 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
+      # run bots B1, B2, B3, B4
       - name: Run with GPT-4o
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-4o --use_perplexity --number_forecasts 5
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-4o --use_perplexity --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B1 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
@@ -39,7 +41,7 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
       - name: Run with GPT-3.5-Turbo
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B2 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
@@ -48,19 +50,20 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
       - name: Run with Anthropic
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model anthropic --use_perplexity --number_forecasts 5
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model anthropic --use_perplexity --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B3 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
-      - name: Run with o1-preview
-        run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_perplexity --number_forecasts 5
-        env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B4 }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
-          API_BASE_URL: ${{ vars.API_BASE_URL }}
+      # commented out because o1-prevew is not currently working
+      # - name: Run with o1-preview
+      #   run: |
+      #     poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_perplexity --number_forecasts 5 --submit_predictions
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B4 }}
+      #     PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #     TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
+      #     API_BASE_URL: ${{ vars.API_BASE_URL }}

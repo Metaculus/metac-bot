@@ -1,12 +1,11 @@
-name: run daily (on beta)
+name: PR Check
 
 on:
-  schedule:
-    - cron: "0 15 * * *" # every day, 11:0A EST
-  workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 jobs:
-  build:
+  pr_check:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -27,14 +26,13 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
-      - name: Run with GPT-3.5-Turbo
-        run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5
+      - name: Run forecast_bot.py
+        run: poetry run python forecast_bot.py
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B2 }}
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B1 }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
-          API_BASE_URL: https://beta.metaculus.com/api2
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
