@@ -20,6 +20,10 @@ from llama_index.core import Settings
 
 import argparse
 
+# Note: To understand this code, it may be easiest to start with the `main()`
+# function and read the code that is called from there.
+
+
 # Dataclass for storing the metaculus API credentials + the base url of the API.
 # Simplifies passing around the API info to functions.
 @dataclass
