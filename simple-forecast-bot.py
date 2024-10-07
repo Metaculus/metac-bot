@@ -280,7 +280,7 @@ def main():
     use_perplexity = False
     submit_predictions = False
     metac_token = config("METACULUS_TOKEN")
-    metac_base_url = "https://beta.metaculus.com/api2"
+    metac_base_url = "https://www.metaculus.com/api2"
     tournament_id = 3294
     llm_model_name = "gpt-4o"
 
