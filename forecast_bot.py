@@ -439,7 +439,7 @@ async def main():
     The following environment variables are important:
     - METACULUS_TOKEN: your metaculus API token (go to https://www.metaculus.com/aib/ to get one)
     - TOURNAMENT_ID: the id of the tournament you want to forecast on. The Q3 id was XXXX.
-    - API_BASE_URL: the base url of the metaculus API. This is https://beta.metaculus.com/api2
+    - API_BASE_URL: the base url of the metaculus API. This is https://www.metaculus.com/api2
     - OPENAI_API_KEY: your openai API key
     - ANTHROPIC_API_KEY: your anthropic API key
     - PERPLEXITY_API_KEY: your perplexity API key
@@ -496,7 +496,7 @@ async def main():
         "--metac_base_url",
         type=str,
         help="The base URL for the metaculus API",
-        default=config("API_BASE_URL", default="https://beta.metaculus.com/api2", cast=str),
+        default=config("API_BASE_URL", default="https://www.metaculus.com/api2", cast=str),
     )
     parser.add_argument(
         "--tournament_id",
