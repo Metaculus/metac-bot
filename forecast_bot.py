@@ -366,7 +366,8 @@ def get_model(model_name: str):
         case "o1-preview":
             return OpenAI(
                 api_key=config("OPENAI_API_KEY", default=""),
-                model=model_name
+                model=model_name,
+                timeout=120,
             )
 
     return None
