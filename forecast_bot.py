@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+!pip install -qU openai asknews
+
 import asyncio
 import json
 import logging
