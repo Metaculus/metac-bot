@@ -40,16 +40,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
-      # run bot B2
-      - name: Run with GPT-3.5-Turbo
-        run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-3.5-turbo --use_perplexity --number_forecasts 5 --submit_predictions
-        env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B2 }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
-          API_BASE_URL: ${{ vars.API_BASE_URL }}
       # run bot B3
       - name: Run with Anthropic
         run: |
@@ -60,7 +50,6 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
-      #commented out because o1-prevew is not currently working
       - name: Run with o1-preview
         run: |
           poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_perplexity --number_forecasts 5 --submit_predictions
