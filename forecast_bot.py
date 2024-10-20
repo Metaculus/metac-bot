@@ -351,11 +351,6 @@ def get_model(model_name: str):
                 api_key=config("OPENAI_API_KEY", default=""),
                 model=model_name
             )
-        case "gpt-3.5-turbo":
-            return OpenAI(
-                api_key=config("OPENAI_API_KEY", default=""),
-                model=model_name
-            )
         case "anthropic":
             tokenizer = Anthropic().tokenizer
             Settings.tokenizer = tokenizer
@@ -489,7 +484,7 @@ async def main():
     parser.add_argument(
         "--llm_model",
         type=str,
-        choices=["gpt-4o", "gpt-3.5-turbo", "anthropic", "o1-preview"],
+        choices=["gpt-4o", "anthropic", "o1-preview"],
         default="gpt-4o",
         help="The model to use, one of the options listed",
     )
