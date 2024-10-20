@@ -4,6 +4,8 @@ import asyncio
 import json
 import logging
 import statistics
+import os
+import textwrap
 
 from attr import dataclass
 import requests
@@ -16,8 +18,10 @@ from llama_index.core.llms import ChatMessage, MessageRole
 from llama_index.core import Settings
 from llama_index.llms.anthropic import Anthropic
 from llama_index.llms.openai import OpenAI
+from asknews_sdk import AskNewsSDK
 
 import argparse
+
 
 # Note: To understand this code, it may be easiest to start with the `main()`
 # function and read the code that is called from there.
@@ -322,6 +326,71 @@ You do not produce forecasts yourself.
     return content
 
 
+def get_asknews_context(query):
+    """
+    Use the AskNews `news` endpoint to get news context for your query.
+    The full API reference can be found here: https://docs.asknews.app/en/reference#get-/v1/news/search
+    """
+    ask = AskNewsSDK(
+        client_id=ASKNEWS_CLIENT_ID,
+        client_secret=ASKNEWS_SECRET,
+        scopes=["news"]
+    )
+
+    # get the latest news related to the query (within the past 48 hours)
+    hot_response = ask.news.search_news(
+        query=query, # your natural language query
+        n_articles=5, # control the number of articles to include in the context, originally 5
+        return_type="both",
+        strategy="latest news" # enforces looking at the latest news only
+    )
+
+    # get context from the "historical" database that contains a news archive going back to 2023
+    historical_response = ask.news.search_news(
+        query=query,
+        n_articles=20,
+        return_type="both",
+        strategy="news knowledge" # looks for relevant news within the past 60 days
+    )
+
+    news_articles_with_full_context = hot_response.as_string + historical_response.as_string
+    formatted_articles = format_asknews_context(
+        hot_response.as_dicts, historical_response.as_dicts)
+    return formatted_articles
+
+
+def format_asknews_context(hot_articles: list[dict], historical_articles: list[dict]):
+    """
+    Format the articles for posting to Metaculus.
+    """
+
+    formatted_articles = "Here are the relevant news articles:\n\n"
+
+    if hot_articles:
+      hot_articles = [article.__dict__ for article in hot_articles]
+      hot_articles = sorted(
+          hot_articles, key=lambda x: x['pub_date'], reverse=True)
+
+      for article in hot_articles:
+          pub_date = article["pub_date"].strftime("%B %d, %Y %I:%M %p")
+          formatted_articles += f"**{article['eng_title']}**\n{article['summary']}\nOriginal language: {article['language']}\nPublish date: {pub_date}\nSource:[{article['source_id']}]({article['article_url']})\n\n"
+
+    if historical_articles:
+      historical_articles = [article.__dict__ for article in historical_articles]
+      historical_articles = sorted(
+          historical_articles, key=lambda x: x['pub_date'], reverse=True)
+
+      for article in historical_articles:
+          pub_date = article["pub_date"].strftime("%B %d, %Y %I:%M %p")
+          formatted_articles += f"**{article['eng_title']}**\n{article['summary']}\nOriginal language: {article['language']}\nPublish date: {pub_date}\nSource:[{article['source_id']}]({article['article_url']})\n\n"
+
+    if not hot_articles and not historical_articles:
+      formatted_articles += "No articles were found.\n\n"
+      return formatted_articles
+
+    return formatted_articles
+
+
 def get_model(model_name: str):
     """
     Get the appropriate language model based on the provided model name.
@@ -405,7 +474,7 @@ async def main():
     for a given tournament, fetches information about them, and then uses an LLM
     to generate a forecast.
 
-    You can decide to use additional information e.g. from perplexity.ai and
+    You can decide to use additional information e.g. from perplexity.ai or AskNews and
     you can decide to make the final forecast the median of multiple predictions,
     instead of just a single one.
 
@@ -439,6 +508,8 @@ async def main():
     - OPENAI_API_KEY: your openai API key
     - ANTHROPIC_API_KEY: your anthropic API key
     - PERPLEXITY_API_KEY: your perplexity API key
+    - ASKNEWS_CLIENT_ID: your AskNews Client ID
+    - ASKNEWS_SECRET: your AskNews API key
 
     Running the bot
     ----------------------
@@ -448,7 +519,7 @@ async def main():
     The script parses additional arguments passed to it when called. To actually
     submit predictions, run `poetry run python forecast_bot.py --submit_predictions`.
 
-    To use perplexity, run `poetry run python forecast_bot.py --use_perplexity` etc.
+    To use AskNews, run `poetry run python forecast_bot.py --use_asknews` etc.
     """
 
     # parse additional arguments passed to the script (i.e. anything after
@@ -466,6 +537,12 @@ async def main():
     parser.add_argument(
         "--use_perplexity",
         help="Use perplexity.ai to search some up to date info about the forecasted question",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--use_asknews",
+        help="Use asknews.app to search some up to date info about the forecasted question",
         default=False,
         action="store_true",
     )
@@ -532,12 +609,12 @@ async def main():
 
         offset += len(questions) # update the offset for the next batch of questions
 
-        # for every question, we get additional information from perplexity if the
-        # argument `--use_perplexity` is passed to the script.
+        # for every question, we get additional information from AskNews if the
+        # argument `--use_asknews` is passed to the script.
         questions_with_news = [
             (
                 question,
-                call_perplexity(question["question"]["title"]) if args.use_perplexity else None,
+                get_asknews_context(question["question"]["title"]) if args.use_asknews else None,
             )
             for question in questions
         ]
@@ -616,14 +693,14 @@ async def main():
                     print(f"Posted final forecast for {id}")
 
         # iterate over all questions again and make a separate comment with the
-        # perplexity info that was used to inform the forecast.
-        for question, perplexity_result in questions_with_news:
+        # asknews info that was used to inform the forecast.
+        for question, asknews_result in questions_with_news:
             id = question["id"]
             if args.submit_predictions:
                 post_question_comment(
                     metac_api_info,
                     id,
-                    f"##Used perplexity info:\n\n {perplexity_result}",
+                    f"##Used asknews info:\n\n {asknews_result}",
                 )
 
 if __name__ == "__main__":
