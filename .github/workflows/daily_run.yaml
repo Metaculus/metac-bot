@@ -33,7 +33,7 @@ jobs:
       # run bot B1
       - name: Run with GPT-4o
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-4o --use_asknews --number_forecasts 1 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model gpt-4o --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B1 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
@@ -44,7 +44,7 @@ jobs:
       # run bot B3
       - name: Run with Anthropic
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model anthropic --use_asknews --number_forecasts 1 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model anthropic --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B3 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
@@ -54,7 +54,7 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
       - name: Run with o1-preview
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_asknews --number_forecasts 1 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B4 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
