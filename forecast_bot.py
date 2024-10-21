@@ -4,8 +4,6 @@ import asyncio
 import json
 import logging
 import statistics
-import os
-import textwrap
 
 from attr import dataclass
 import requests
@@ -189,11 +187,9 @@ def post_question_prediction(
         json={"prediction": float(prediction_percentage) / 100},
         headers={"Authorization": f"Token {api_info.token}"},
     )
-    response.raise_for_status()
     if not response.ok:
-        logging.error(
-            f"Failed posting a prediction on question {question_id}: {response.text}"
-        )
+        raise Exception(response.text)
+
     return response.json, response.ok
 
 
@@ -220,7 +216,8 @@ def get_question_details(api_info: MetacApiInfo, question_id):
         url,
         headers={"Authorization": f"Token {api_info.token}"},
     )
-    response.raise_for_status()
+    if not response.ok:
+        raise Exception(response.text)
     return json.loads(response.content)
 
 
@@ -272,7 +269,8 @@ def list_questions(api_info: MetacApiInfo, tournament_id: int, offset=0, count=1
     # base_url/questions/, then a "?"" before the first url param and then a "&"
     # between additional parameters
 
-    response.raise_for_status()
+    if not response.ok:
+        raise Exception(response.text)
     data = json.loads(response.content)
     return data["results"]
 
@@ -317,7 +315,8 @@ You do not produce forecasts yourself.
         ],
     }
     response = requests.post(url=url, json=payload, headers=headers)
-    response.raise_for_status()
+    if not response.ok:
+        raise Exception(response.text)
     content = response.json()["choices"][0]["message"]["content"]
     print(
         f"\n\nCalled perplexity with:\n----\n{json.dumps(payload)}\n---\n, and got\n:",
@@ -332,8 +331,8 @@ def get_asknews_context(query):
     The full API reference can be found here: https://docs.asknews.app/en/reference#get-/v1/news/search
     """
     ask = AskNewsSDK(
-        client_id=ASKNEWS_CLIENT_ID,
-        client_secret=ASKNEWS_SECRET,
+        client_id=config("ASKNEWS_CLIENT_ID", default="-"),
+        client_secret=config("ASKNEWS_SECRET", default="-"),
         scopes=["news"]
     )
 
