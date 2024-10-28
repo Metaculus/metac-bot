@@ -419,7 +419,7 @@ def get_model(model_name: str):
                 api_key=config("OPENAI_API_KEY", default=""),
                 model=model_name
             )
-        case "anthropic":
+        case "claude-3-5-sonnet-20240620":
             tokenizer = Anthropic().tokenizer
             Settings.tokenizer = tokenizer
             return Anthropic(
@@ -431,6 +431,13 @@ def get_model(model_name: str):
                 api_key=config("OPENAI_API_KEY", default=""),
                 model=model_name,
                 timeout=600,
+            )
+        case "claude-3-5-sonnet-20241022":
+            tokenizer = Anthropic().tokenizer
+            Settings.tokenizer = tokenizer
+            return Anthropic(
+                api_key=config("ANTHROPIC_API_KEY", default=""),
+                model="claude-3-5-sonnet-20241022",
             )
 
     return None
@@ -560,7 +567,7 @@ async def main():
     parser.add_argument(
         "--llm_model",
         type=str,
-        choices=["gpt-4o", "anthropic", "o1-preview"],
+        choices=["gpt-4o", "claude-3-5-sonnet-20240620", "o1-preview", "claude-3-5-sonnet-20241022"],
         default="gpt-4o",
         help="The model to use, one of the options listed",
     )
