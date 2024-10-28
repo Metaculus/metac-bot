@@ -44,7 +44,7 @@ jobs:
       # run bot B3
       - name: Run with Claude-3-5-sonnet-20240620
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model Claude-3-5-sonnet-20240620 --use_asknews --number_forecasts 5 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model claude-3-5-sonnet-20240620 --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B3 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
@@ -66,7 +66,7 @@ jobs:
       # run bot B5
       - name: Run with Claude-3-5-sonnet-20241022
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model Claude-3-5-sonnet-20241022 --use_asknews --number_forecasts 5 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model claude-3-5-sonnet-20241022 --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B5 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
