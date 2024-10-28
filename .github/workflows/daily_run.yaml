@@ -42,9 +42,9 @@ jobs:
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
       # run bot B3
-      - name: Run with Anthropic
+      - name: Run with Claude-3-5-sonnet-20240620
         run: |
-          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model anthropic --use_asknews --number_forecasts 5 --submit_predictions
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model Claude-3-5-sonnet-20240620 --use_asknews --number_forecasts 5 --submit_predictions
         env:
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B3 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
@@ -52,6 +52,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
+      # run bot B4
       - name: Run with o1-preview
         run: |
           poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model o1-preview --use_asknews --number_forecasts 5 --submit_predictions
@@ -60,5 +61,16 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+      # run bot B5
+      - name: Run with Claude-3-5-sonnet-20241022
+        run: |
+          poetry run python forecast_bot.py --metac_token_env_name METACULUS_TOKEN --llm_model Claude-3-5-sonnet-20241022 --use_asknews --number_forecasts 5 --submit_predictions
+        env:
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B5 }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TOURNAMENT_ID: ${{ vars.TOURNAMENT_ID }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
