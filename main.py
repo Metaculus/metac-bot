@@ -20,7 +20,7 @@ from pydantic import BaseModel
 SUBMIT_PREDICTION = True  # set to True to publish your predictions to Metaculus
 USE_EXAMPLE_QUESTIONS = False  # set to True to forecast example questions rather than the tournament questions
 NUM_RUNS_PER_QUESTION = 5  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
-SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = False
+SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = True
 GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
 llm_model_name: str | None = None
 
@@ -761,10 +761,10 @@ Option_N: Probability_N
 """
 
 
-def extract_option_probabilities_from_response(forecast_text: str, options) -> float:
+def extract_option_probabilities_from_response(forecast_text: str, options: list[str]) -> list[float]:
 
     # Helper function that returns a list of tuples with numbers for all lines with Percentile
-    def extract_option_probabilities(text):
+    def extract_option_probabilities(text: str) -> list[float]:
 
         # Number extraction pattern
         number_pattern = r"-?\d+(?:,\d{3})*(?:\.\d+)?"
@@ -891,9 +891,11 @@ async def get_multiple_choice_gpt_prediction(
     )
 
     average_probability_yes_per_category: dict[str, float] = {}
+    option_forecasts = [prediction.forecast for prediction in sub_predictions]
+    option_forecasts = typeguard.check_type(option_forecasts, list[dict[str, float]])
     for option in options:
         probabilities_for_current_option = [
-            p.forecast[option] for p in sub_predictions
+            forecast[option] for forecast in option_forecasts
         ]
         average_probability_yes_per_category[option] = sum(
             probabilities_for_current_option
