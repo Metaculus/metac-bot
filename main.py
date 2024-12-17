@@ -13,14 +13,15 @@ from litellm import acompletion
 from litellm.files.main import ModelResponse
 from litellm.types.utils import Choices
 import litellm
+from pydantic import BaseModel
 
 ######################### CONSTANTS #########################
 # Constants
 SUBMIT_PREDICTION = True  # set to True to publish your predictions to Metaculus
-USE_EXAMPLE_QUESTIONS = True  # set to True to forecast example questions rather than the tournament questions
-NUM_RUNS_PER_QUESTION = 1  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
+USE_EXAMPLE_QUESTIONS = False  # set to True to forecast example questions rather than the tournament questions
+NUM_RUNS_PER_QUESTION = 5  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
 SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = False
-GET_NEWS = False  # set to True to enable AskNews after entering ASKNEWS secrets
+GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
 llm_model_name: str | None = None
 
 # Environment variables
@@ -38,8 +39,8 @@ TOURNAMENT_ID = 32506 # Q4 AI Benchmarking
 # The example questions can be used for testing your bot.
 EXAMPLE_QUESTIONS = [  # (question_id, post_id)
     (28571, 28571),  # SSE - Numeric - https://www.metaculus.com/questions/28571/
-    # (30270, 30477),  # Executive Order - Multiple Choice - https://www.metaculus.com/questions/30477/
-    # (30478, 30711),  # South Korea - Binary - https://www.metaculus.com/questions/30711/
+    (30270, 30477),  # Executive Order - Multiple Choice - https://www.metaculus.com/questions/30477/
+    (30478, 30711),  # South Korea - Binary - https://www.metaculus.com/questions/30711/
     # (28997, 29077), # brazil - Numeric - https://www.metaculus.com/questions/29077/
     # (29480, 29608), # elon - Numeric - https://www.metaculus.com/questions/29608/
     # (28953, 29028), # arms sales - Discrete Numeric -  https://www.metaculus.com/questions/29028/
@@ -324,6 +325,15 @@ def format_asknews_context(
     return formatted_articles
 
 
+class ReasonedPrediction(BaseModel):
+    forecast: float | dict[str, float] | list[float]
+    rationale: str
+
+class AggregatePrediction(BaseModel):
+    forecast: float | dict[str, float] | list[float]
+    sub_predictions: list[ReasonedPrediction]
+    news: str
+
 ############### BINARY ###############
 # @title Binary prompt & functions
 
@@ -377,7 +387,7 @@ def extract_probability_from_response_as_percentage_not_decimal(
 
 async def get_binary_gpt_prediction(
     question_details: dict, num_runs: int
-) -> tuple[float, str]:
+) -> AggregatePrediction:
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     title = question_details["title"]
@@ -389,8 +399,10 @@ async def get_binary_gpt_prediction(
     if GET_NEWS == True:
         full_article_context, formatted_articles = get_asknews_context(title)
         summary_report = formatted_articles
+        news = formatted_articles
     else:
         summary_report = ""
+        news = ""
 
     content = BINARY_PROMPT_TEMPLATE.format(
         title=title,
@@ -401,35 +413,27 @@ async def get_binary_gpt_prediction(
         summary_report=summary_report,
     )
 
-    async def get_rationale_and_probability(content: str) -> tuple[float, str]:
+    async def get_rationale_and_probability(content: str) -> ReasonedPrediction:
         rationale = await call_llm(content)
-
-        probability = extract_probability_from_response_as_percentage_not_decimal(
-            rationale
+        probability = extract_probability_from_response_as_percentage_not_decimal(rationale)
+        return ReasonedPrediction(
+            forecast=probability/100,
+            rationale=rationale
         )
-        comment = (
-            f"Extracted Probability: {probability}%\n\nGPT's Answer: "
-            f"{rationale}\n\n\n"
-        )
-        return probability, comment
 
-    probability_and_comment_pairs = await asyncio.gather(
+    sub_predictions = await asyncio.gather(
         *[get_rationale_and_probability(content) for _ in range(num_runs)]
     )
-    comments = [pair[1] for pair in probability_and_comment_pairs]
-    final_comment_sections = [
-        f"## Rationale {i+1}\n{comment}" for i, comment in enumerate(comments)
-    ]
-    probabilities = [pair[0] for pair in probability_and_comment_pairs]
-    median_probability = float(np.median(probabilities)) / 100
+    forecasts = [p.forecast for p in sub_predictions]
+    forecasts = typeguard.check_type(forecasts, list[float])
+    median_probability = float(np.median(forecasts))
+    print(f"Generated {len(sub_predictions)} sub-predictions")
 
-    final_comment = f"Median Probability: {median_probability}\n\n" + "\n\n".join(
-        final_comment_sections
+    return AggregatePrediction(
+        forecast=median_probability,
+        sub_predictions=sub_predictions,
+        news=news
     )
-    print(f"Comment: {final_comment}")
-    print(f"Extracted Probability (0.001 to 0.999): {median_probability}")
-
-    return median_probability, final_comment
 
 
 ####################### NUMERIC ###############
@@ -641,7 +645,7 @@ def generate_continuous_cdf(
 
 async def get_numeric_gpt_prediction(
     question_details: dict, num_runs: int
-) -> tuple[list[float], str]:
+) -> AggregatePrediction:
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     title = question_details["title"]
@@ -669,8 +673,10 @@ async def get_numeric_gpt_prediction(
     if GET_NEWS == True:
         full_article_context, formatted_articles = get_asknews_context(title)
         summary_report = formatted_articles
+        news = formatted_articles
     else:
         summary_report = ""
+        news = ""
 
     content = NUMERIC_PROMPT_TEMPLATE.format(
         title=title,
@@ -683,21 +689,9 @@ async def get_numeric_gpt_prediction(
         upper_bound_message=upper_bound_message,
     )
 
-    async def ask_llm_to_get_cdf(content: str) -> tuple[list[float], str]:
+    async def ask_llm_to_get_cdf(content: str) -> ReasonedPrediction:
         rationale = await call_llm(content)
         percentile_values = extract_percentiles_from_response(rationale)
-
-        comment = (
-            f"Extracted Percentile_values: {percentile_values}\n\nGPT's Answer: "
-            f"{rationale}\n\n\n"
-        )
-
-        print(f"Comment: {comment}")
-        print(f"Extracted Percentile_values: {percentile_values}")
-        print(f"Scaling: {scaling}")
-        print(f"Open upper bound: {open_upper_bound}")
-        print(f"Open lower bound: {open_lower_bound}")
-
         cdf = generate_continuous_cdf(
             percentile_values,
             question_type,
@@ -707,27 +701,24 @@ async def get_numeric_gpt_prediction(
             lower_bound,
             zero_point,
         )
+        return ReasonedPrediction(
+            forecast=cdf,
+            rationale=rationale
+        )
 
-        return cdf, comment
-
-    cdf_and_comment_pairs = await asyncio.gather(
+    sub_predictions = await asyncio.gather(
         *[ask_llm_to_get_cdf(content) for _ in range(num_runs)]
     )
-    comments = [pair[1] for pair in cdf_and_comment_pairs]
-    final_comment_sections = [
-        f"## Rationale {i+1}\n{comment}" for i, comment in enumerate(comments)
-    ]
-    cdfs: list[list[float]] = [pair[0] for pair in cdf_and_comment_pairs]
-    all_cdfs = np.array(cdfs)
-    median_cdf: list[float] = np.median(all_cdfs, axis=0).tolist()
 
-    final_comment = f"Median CDF: `{str(median_cdf)[:100]}...`\n\n" + "\n\n".join(
-        final_comment_sections
+    all_cdfs = np.array([p.forecast for p in sub_predictions])
+    median_cdf = np.median(all_cdfs, axis=0).tolist()
+    print(f"Generated {len(sub_predictions)} sub-predictions")
+
+    return AggregatePrediction(
+        forecast=median_cdf,
+        sub_predictions=sub_predictions,
+        news=news
     )
-    print(f"Comment: {final_comment}")
-    print(f"Extracted CDF: {median_cdf}")
-
-    return median_cdf, final_comment
 
 
 ########################## MULTIPLE CHOICE ###############
@@ -854,7 +845,7 @@ def generate_multiple_choice_forecast(options, option_probabilities) -> dict:
 async def get_multiple_choice_gpt_prediction(
     question_details: dict,
     num_runs: int,
-) -> tuple[dict[str, float], str]:
+) -> AggregatePrediction:
 
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     title = question_details["title"]
@@ -867,8 +858,10 @@ async def get_multiple_choice_gpt_prediction(
     if GET_NEWS == True:
         full_article_context, formatted_articles = get_asknews_context(title)
         summary_report = formatted_articles
+        news = formatted_articles
     else:
         summary_report = ""
+        news = ""
 
     content = MULTIPLE_CHOICE_PROMPT_TEMPLATE.format(
         title=title,
@@ -882,54 +875,37 @@ async def get_multiple_choice_gpt_prediction(
 
     async def ask_llm_for_multiple_choice_probabilities(
         content: str,
-    ) -> tuple[dict[str, float], str]:
+    ) -> ReasonedPrediction:
         rationale = await call_llm(content)
-
-        print(f"Rationale: {rationale}")
-
-        option_probabilities = extract_option_probabilities_from_response(
-            rationale, options
-        )
-
-        comment = (
-            f"EXTRACTED_PROBABILITIES: {option_probabilities}\n\nGPT's Answer: "
-            f"{rationale}\n\n\n"
-        )
-
+        option_probabilities = extract_option_probabilities_from_response(rationale, options)
         probability_yes_per_category = generate_multiple_choice_forecast(
             options, option_probabilities
         )
-        return probability_yes_per_category, comment
+        return ReasonedPrediction(
+            forecast=probability_yes_per_category,
+            rationale=rationale
+        )
 
-    probability_yes_per_category_and_comment_pairs = await asyncio.gather(
+    sub_predictions = await asyncio.gather(
         *[ask_llm_for_multiple_choice_probabilities(content) for _ in range(num_runs)]
     )
-    comments = [pair[1] for pair in probability_yes_per_category_and_comment_pairs]
-    final_comment_sections = [
-        f"## Rationale {i+1}\n{comment}" for i, comment in enumerate(comments)
-    ]
-    probability_yes_per_category_dicts: list[dict[str, float]] = [
-        pair[0] for pair in probability_yes_per_category_and_comment_pairs
-    ]
+
     average_probability_yes_per_category: dict[str, float] = {}
     for option in options:
-        probabilities_for_current_option: list[float] = [
-            dict[option] for dict in probability_yes_per_category_dicts
+        probabilities_for_current_option = [
+            p.forecast[option] for p in sub_predictions
         ]
         average_probability_yes_per_category[option] = sum(
             probabilities_for_current_option
         ) / len(probabilities_for_current_option)
 
-    final_comment = (
-        f"Average Probability Yes Per Category: `{average_probability_yes_per_category}`\n\n"
-        + "\n\n".join(final_comment_sections)
-    )
-    print(f"Comment: {final_comment}")
-    print(
-        f"Extracted Probability Yes Per Category: {average_probability_yes_per_category}"
-    )
+    print(f"Generated {len(sub_predictions)} sub-predictions")
 
-    return average_probability_yes_per_category, final_comment
+    return AggregatePrediction(
+        forecast=average_probability_yes_per_category,
+        sub_predictions=sub_predictions,
+        news=news
+    )
 
 
 ################### FORECASTING ###################
@@ -950,6 +926,23 @@ def forecast_is_already_made(post_details: dict) -> bool:
     except Exception:
         return False
 
+async def run_prediction_function(question_details: dict, num_runs_per_question: int) -> AggregatePrediction:
+    question_type = question_details["type"]
+    if question_type == "binary":
+        prediction = await get_binary_gpt_prediction(
+            question_details, num_runs_per_question
+        )
+    elif question_type == "numeric":
+        prediction = await get_numeric_gpt_prediction(
+            question_details, num_runs_per_question
+        )
+    elif question_type == "multiple_choice":
+        prediction = await get_multiple_choice_gpt_prediction(
+            question_details, num_runs_per_question
+        )
+    else:
+        raise ValueError(f"Unknown question type: {question_type}")
+    return prediction
 
 async def forecast_individual_question(
     question_id: int,
@@ -975,40 +968,32 @@ async def forecast_individual_question(
         forecast_is_already_made(post_details)
         and skip_previously_forecasted_questions == True
     ):
-        summary_of_forecast += f"Skipped: Forecast already made\n"
+        summary_of_forecast += "Skipped: Forecast already made\n"
         return summary_of_forecast
 
-    if question_type == "binary":
-        forecast, comment = await get_binary_gpt_prediction(
-            question_details, num_runs_per_question
-        )
-    elif question_type == "numeric":
-        forecast, comment = await get_numeric_gpt_prediction(
-            question_details, num_runs_per_question
-        )
-    elif question_type == "multiple_choice":
-        forecast, comment = await get_multiple_choice_gpt_prediction(
-            question_details, num_runs_per_question
-        )
-    else:
-        raise ValueError(f"Unknown question type: {question_type}")
+    aggregate_prediction = await run_prediction_function(question_details, num_runs_per_question)
 
-    if question_type == "numeric":
-        summary_of_forecast += f"Forecast: {str(forecast)[:200]}...\n"
-    else:
-        summary_of_forecast += f"Forecast: {forecast}\n"
-
-    summary_of_forecast += f"Comment:\n```\n{comment[:200]}...\n```\n\n"
-
-    if submit_prediction == True:
-        news =
-        comment = f"# Aggregate Forecast\n{forecast}\n\n# News\n{news}\n\n# Rationales\n{comment}"
-        forecast_payload = create_forecast_payload(forecast, question_type)
+    if submit_prediction:
+        for i, sub_prediction in enumerate(aggregate_prediction.sub_predictions):
+            forecast_payload = create_forecast_payload(sub_prediction.forecast, question_type)
+            post_question_prediction(question_id, forecast_payload)
+            comment = f"## Sub-Prediction {i+1}\n{sub_prediction.rationale}"
+            post_question_comment(post_id, comment)
+        forecast_payload = create_forecast_payload(aggregate_prediction.forecast, question_type)
+        comment = (
+            f"# Aggregate Forecast\n{str(aggregate_prediction.forecast)[:200]}\n\n"
+            f"# News\n{aggregate_prediction.news}\n\n"
+            f"# Individual Predictions\n"
+            + "\n\n".join(f"## Sub-Prediction {i+1}\n{p.rationale}"
+                         for i, p in enumerate(aggregate_prediction.sub_predictions))
+        )
         post_question_prediction(question_id, forecast_payload)
         post_question_comment(post_id, comment)
+        summary_of_forecast += f"Forecast: {str(aggregate_prediction.forecast)[:200]}\n"
         summary_of_forecast += "Posted: Forecast was posted to Metaculus.\n"
 
     return summary_of_forecast
+
 
 
 async def forecast_questions(
