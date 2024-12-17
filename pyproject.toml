@@ -16,6 +16,9 @@ llama-index-llms-openai = "^0.2.13"
 llama-index-llms-anthropic = "^0.3.6"
 llama-index = "^0.11.17"
 asknews = "^0.7.50"
+litellm = "^1.55.3"
+typeguard = "^4.4.1"
+pydantic = "^2.10.3"
 
 [build-system]
 requires = ["poetry-core"]
