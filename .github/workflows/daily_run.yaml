@@ -36,7 +36,7 @@ jobs:
         run: |
           poetry run python main.py --llm openai/gpt-4o
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B6 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -45,7 +45,7 @@ jobs:
         run: |
           poetry run python main.py --llm openai/o1-preview
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B7 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -54,7 +54,7 @@ jobs:
         run: |
           poetry run python main.py --llm anthropic/claude-3-5-sonnet-20240620
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B8 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_0620 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -63,7 +63,7 @@ jobs:
         run: |
           poetry run python main.py --llm anthropic/claude-3-5-sonnet-20241022
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B9 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_1022 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -72,16 +72,16 @@ jobs:
         run: |
           poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 2
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B10 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       # run bot B11
       - name: Run with Grok-beta
         run: |
-          poetry run python main.py --llm xai/grok-beta
+          poetry run python main.py --llm xai/grok-2-1212
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B11 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_GROK_2_1212 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
@@ -90,7 +90,7 @@ jobs:
         run: |
           poetry run python main.py --llm together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN_B12 }}
+          METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
