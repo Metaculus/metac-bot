@@ -19,7 +19,7 @@ from pydantic import BaseModel
 # Constants
 SUBMIT_PREDICTION = True  # set to True to publish your predictions to Metaculus
 USE_EXAMPLE_QUESTIONS = False  # set to True to forecast example questions rather than the tournament questions
-NUM_RUNS_PER_QUESTION = 5  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
+NUM_RUNS_PER_QUESTION = 1  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
 SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = True
 GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
 llm_model_name: str | None = None
@@ -199,13 +199,12 @@ def get_post_details(post_id: int) -> dict:
     return json.loads(response.content)
 
 
-CONCURRENT_REQUESTS_LIMIT = 5
-llm_semaphore = asyncio.Semaphore(CONCURRENT_REQUESTS_LIMIT)
+llm_concurrency_semaphore: asyncio.Semaphore | None = None
 
 async def call_llm(prompt: str, temperature: float = 0.3) -> str:
     assert llm_model_name is not None
     litellm.drop_params = True
-    async with llm_semaphore:
+    async with llm_concurrency_semaphore:
         response = await acompletion(
             model=llm_model_name,
             messages=[{"role": "user", "content": prompt}],
@@ -217,6 +216,7 @@ async def call_llm(prompt: str, temperature: float = 0.3) -> str:
         choices = typeguard.check_type(choices, list[Choices])
         reasoning = choices[0].message.content
         assert isinstance(reasoning, str)
+        print(f"\nGPT Reasoning:\n{reasoning}\n\n")
         return reasoning
 
 def call_perplexity(query: str) -> str:
@@ -546,6 +546,15 @@ def generate_continuous_cdf(
     percentile_min = min(float(key) for key in percentile_values.keys())
     range_min = lower_bound
     range_max = upper_bound
+    range_size = range_max - range_min
+    buffer = 1 if range_size > 100 else 0.01 * range_size
+
+    # Adjust any values that are exactly at the bounds
+    for percentile, value in list(percentile_values.items()):
+        if not open_lower_bound and value <= range_min + buffer:
+            percentile_values[percentile] = range_min + buffer
+        if not open_upper_bound and value >= range_max - buffer:
+            percentile_values[percentile] = range_max - buffer
 
     # Set cdf values outside range
     if open_upper_bound:
@@ -588,7 +597,8 @@ def generate_continuous_cdf(
             scale = lambda x: range_min + (range_max - range_min) * (
                 deriv_ratio**x - 1
             ) / (deriv_ratio - 1)
-        return [scale(x) for x in np.linspace(0, 1, 201)]
+        xaxis = [scale(x) for x in np.linspace(0, 1, 201)]
+        return xaxis
 
     cdf_xaxis = generate_cdf_locations(range_min, range_max, zero_point)
 
@@ -617,8 +627,6 @@ def generate_continuous_cdf(
                 i = 0
                 while i < len(known_x) and known_x[i] < x:
                     i += 1
-
-                list_index_2 = i
 
                 # If x is outside the range of known x-values, use the nearest endpoint
                 if i == 0:
@@ -1032,9 +1040,11 @@ async def forecast_questions(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run forecasting with specified LLM model')
     parser.add_argument('--llm', type=str, help='LLM model name to use for forecasting', default=None)
+    parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests', default=5)
     args = parser.parse_args()
 
     llm_model_name = args.llm
+    llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
 
     if USE_EXAMPLE_QUESTIONS:
         open_question_id_post_id = EXAMPLE_QUESTIONS
