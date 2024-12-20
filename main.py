@@ -204,6 +204,7 @@ llm_concurrency_semaphore: asyncio.Semaphore | None = None
 async def call_llm(prompt: str, temperature: float = 0.3) -> str:
     assert llm_model_name is not None
     litellm.drop_params = True
+    assert llm_concurrency_semaphore is not None
     async with llm_concurrency_semaphore:
         response = await acompletion(
             model=llm_model_name,
@@ -461,6 +462,9 @@ Today is {today}.
 {lower_bound_message}
 {upper_bound_message}
 
+Please notice the units requested (e.g. whether you represent a number as 1,000,000 or 1m).
+Never use scientific notation.
+
 Before answering you write:
 (a) The time left until the outcome to the question is known.
 (b) The outcome if nothing changed.
@@ -487,31 +491,28 @@ def extract_percentiles_from_response(forecast_text: str) -> dict:
 
     # Helper function that returns a list of tuples with numbers for all lines with Percentile
     def extract_percentile_numbers(text) -> dict:
-        # Regular expression pattern
         pattern = r"^.*(?:P|p)ercentile.*$"
-
-        # Number extraction pattern
-        number_pattern = r"-?\d+(?:,\d{3})*(?:\.\d+)?"
-
+        number_pattern = r"-\s*(?:[^\d\-]*\s*)?(\d+(?:,\d{3})*(?:\.\d+)?)|(\d+(?:,\d{3})*(?:\.\d+)?)"
         results = []
 
-        # Iterate through each line in the text
         for line in text.split("\n"):
-            # Check if the line contains "Percentile" or "percentile"
             if re.match(pattern, line):
-                # Extract all numbers from the line
                 numbers = re.findall(number_pattern, line)
-                numbers_no_commas = [num.replace(",", "") for num in numbers]
-                # Convert strings to float or int
-                numbers = [
-                    float(num) if "." in num else int(num) for num in numbers_no_commas
+                numbers_no_commas = [
+                    next(num for num in match if num).replace(",", "")
+                    for match in numbers
                 ]
-                # Add the tuple of numbers to results
+                numbers = [
+                    float(num) if "." in num else int(num)
+                    for num in numbers_no_commas
+                ]
                 if len(numbers) > 1:
                     first_number = numbers[0]
                     last_number = numbers[-1]
-                    tup = [first_number, last_number]
-                    results.append(tuple(tup))
+                    # Check if the original line had a negative sign before the last number
+                    if "-" in line.split(":")[-1]:
+                        last_number = -abs(last_number)
+                    results.append((first_number, last_number))
 
         # Convert results to dictionary
         percentile_values = {}
