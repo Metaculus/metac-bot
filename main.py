@@ -31,8 +31,8 @@ if GET_NEWS == True:
     ASKNEWS_SECRET = os.getenv("ASKNEWS_SECRET")
 
 # The tournament IDs below can be used for testing your bot.
-TOURNAMENT_ID = 32506 # Q4 AI Benchmarking
-# TOURNAMENT_ID = 3672  # Quarterly Cup
+# TOURNAMENT_ID = 32506 # Q4 AI Benchmarking
+TOURNAMENT_ID = 3672  # Quarterly Cup
 # TOURNAMENT_ID = 3600 # GiveWell
 # TOURNAMENT_ID = 3411 # Respiratory Outlook
 
