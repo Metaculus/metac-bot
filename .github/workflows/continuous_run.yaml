@@ -98,6 +98,14 @@ jobs:
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
         continue-on-error: true
+      - name: Check Bot Failures
+        run: |
+          if [ "${{ steps.bot1.outcome }}" == "failure" ]; then echo "Bot1 (o1-preview) failed"; fi
+          if [ "${{ steps.bot2.outcome }}" == "failure" ]; then echo "Bot2 (Claude-3-5-sonnet-20240620) failed"; fi
+          if [ "${{ steps.bot3.outcome }}" == "failure" ]; then echo "Bot3 (Claude-3-5-sonnet-20241022) failed"; fi
+          if [ "${{ steps.bot4.outcome }}" == "failure" ]; then echo "Bot4 (Gemini-exp-1206) failed"; fi
+          if [ "${{ steps.bot5.outcome }}" == "failure" ]; then echo "Bot5 (Grok-beta) failed"; fi
+          if [ "${{ steps.bot6.outcome }}" == "failure" ]; then echo "Bot6 (Meta-Llama-3.1-405B-Instruct-Turbo) failed"; fi
       - name: Fail Job if Step Actually Failed
         if: steps.bot1.outcome == 'failure' || steps.bot2.outcome == 'failure' || steps.bot3.outcome == 'failure' || steps.bot4.outcome == 'failure' || steps.bot5.outcome == 'failure' || steps.bot6.outcome == 'failure'
         run: exit 1
