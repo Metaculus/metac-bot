@@ -19,7 +19,7 @@ asknews = "^0.7.50"
 litellm = "^1.55.3"
 typeguard = "^4.4.1"
 pydantic = "^2.10.3"
-forecasting-tools = "^0.2.0"
+forecasting-tools = "0.2.7"
 
 [build-system]
 requires = ["poetry-core"]
