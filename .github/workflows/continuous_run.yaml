@@ -93,7 +93,7 @@ jobs:
       #     TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
       #   continue-on-error: true
       - name: Fail but continue
-        run: poetry run python
+        run: poetry run python fail.py
         continue-on-error: true
       - name: Fail Job if Any Step Failed
         if: failure()
