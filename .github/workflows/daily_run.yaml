@@ -3,7 +3,7 @@ name: Daily Build
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/30 * * * *"
 
 # Daily job to run all bots
 jobs:
