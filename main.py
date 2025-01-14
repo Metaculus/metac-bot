@@ -22,19 +22,26 @@ USE_EXAMPLE_QUESTIONS = False  # set to True to forecast example questions rathe
 NUM_RUNS_PER_QUESTION = 5  # The median forecast is taken between NUM_RUNS_PER_QUESTION runs
 SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = True
 GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
-llm_model_name: str | None = None
+LLM_MODEL_NAME: str | None = None
 
 # Environment variables
 METACULUS_TOKEN = os.getenv("METACULUS_TOKEN")
 if GET_NEWS == True:
     ASKNEWS_CLIENT_ID = os.getenv("ASKNEWS_CLIENT_ID")
     ASKNEWS_SECRET = os.getenv("ASKNEWS_SECRET")
+    EXA_API_KEY = os.getenv("EXA_API_KEY")
+    PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 
 # The tournament IDs below can be used for testing your bot.
-TOURNAMENT_ID = 32627 # Q1 AI Benchmarking
-# TOURNAMENT_ID = 3672  # Quarterly Cup
-# TOURNAMENT_ID = 3600 # GiveWell
-# TOURNAMENT_ID = 3411 # Respiratory Outlook
+Q4_2024_AI_BENCHMARKING_ID = 32506
+Q1_2025_AI_BENCHMARKING_ID = 32627
+Q4_2024_QUARTERLY_CUP_ID = 3672
+Q1_2025_QUARTERLY_CUP_ID = 32630
+AXC_2025_TOURNAMENT_ID = 32564
+GIVEWELL_ID = 3600
+RESPIRATORY_OUTLOOK_ID = 3411
+
+TOURNAMENT_ID = Q1_2025_AI_BENCHMARKING_ID
 
 # The example questions can be used for testing your bot.
 EXAMPLE_QUESTIONS = [  # (question_id, post_id)
@@ -202,12 +209,12 @@ def get_post_details(post_id: int) -> dict:
 llm_concurrency_semaphore: asyncio.Semaphore | None = None
 
 async def call_llm(prompt: str, temperature: float = 0.3) -> str:
-    assert llm_model_name is not None
+    assert LLM_MODEL_NAME is not None
     litellm.drop_params = True
     assert llm_concurrency_semaphore is not None
     async with llm_concurrency_semaphore:
         response = await acompletion(
-            model=llm_model_name,
+            model=LLM_MODEL_NAME,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             stream=False,
@@ -1044,7 +1051,7 @@ if __name__ == "__main__":
     parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests', default=5)
     args = parser.parse_args()
 
-    llm_model_name = args.llm
+    LLM_MODEL_NAME = args.llm
     llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
 
     if USE_EXAMPLE_QUESTIONS:
