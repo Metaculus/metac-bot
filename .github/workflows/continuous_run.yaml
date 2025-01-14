@@ -29,66 +29,72 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
-      - name: Run with GPT-4o
-        run: |
-          poetry run python main.py --llm openai/gpt-4o
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      # - name: Run with GPT-4o
+      #   run: |
+      #     poetry run python main.py --llm openai/gpt-4o
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with o1-preview
+      #   run: |
+      #     poetry run python main.py --llm openai/o1-preview
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with Claude-3-5-sonnet-20240620
+      #   run: |
+      #     poetry run python main.py --llm anthropic/claude-3-5-sonnet-20240620
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_SONNET_0620 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with Claude-3-5-sonnet-20241022
+      #   run: |
+      #     poetry run python main.py --llm anthropic/claude-3-5-sonnet-20241022
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_SONNET_1022 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with Gemini-exp-1206
+      #   run: |
+      #     poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 2
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with Grok-beta
+      #   run: |
+      #     poetry run python main.py --llm xai/grok-2-1212
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_GROK_2_1212 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      #   continue-on-error: true
+      # - name: Run with Meta-Llama-3.1-405B-Instruct-Turbo
+      #   run: |
+      #     poetry run python main.py --llm together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
+      #   env:
+      #     METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
+      #     ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      #     ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      #     TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+      #   continue-on-error: true
+      - name: Fail but continue
+        run: exit 1
         continue-on-error: true
-      - name: Run with o1-preview
-        run: |
-          poetry run python main.py --llm openai/o1-preview
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Claude-3-5-sonnet-20240620
-        run: |
-          poetry run python main.py --llm anthropic/claude-3-5-sonnet-20240620
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_0620 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        continue-on-error: true
-      - name: Run with Claude-3-5-sonnet-20241022
-        run: |
-          poetry run python main.py --llm anthropic/claude-3-5-sonnet-20241022
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_1022 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        continue-on-error: true
-      - name: Run with Gemini-exp-1206
-        run: |
-          poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 2
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Grok-beta
-        run: |
-          poetry run python main.py --llm xai/grok-2-1212
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GROK_2_1212 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Meta-Llama-3.1-405B-Instruct-Turbo
-        run: |
-          poetry run python main.py --llm together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
-        continue-on-error: true
+      - name: Fail Job if Any Step Failed
+        if: failure()
+        run: exit 1
