@@ -133,7 +133,7 @@ def create_forecast_payload(
 
 
 def list_posts_from_tournament(
-    tournament_id: int = TOURNAMENT_ID, offset: int = 0, count: int = 50
+    tournament_id: int, offset: int = 0, count: int = 50
 ) -> list[dict]:
     """
     List (all details) {count} posts from the {tournament_id}
@@ -161,8 +161,8 @@ def list_posts_from_tournament(
     return data
 
 
-def get_open_question_ids_from_tournament() -> list[tuple[int, int]]:
-    posts = list_posts_from_tournament()
+def get_open_question_ids_from_tournament(tournament_id: int) -> list[tuple[int, int]]:
+    posts = list_posts_from_tournament(tournament_id)
 
     post_dict = dict()
     for post in posts["results"]: # type: ignore
@@ -1064,7 +1064,7 @@ if __name__ == "__main__":
     if USE_EXAMPLE_QUESTIONS:
         open_question_id_post_id = EXAMPLE_QUESTIONS
     else:
-        open_question_id_post_id = get_open_question_ids_from_tournament()
+        open_question_id_post_id = get_open_question_ids_from_tournament(TOURNAMENT_ID)
 
     asyncio.run(
         forecast_questions(
