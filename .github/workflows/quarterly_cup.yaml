@@ -1,6 +1,7 @@
 name: Daily Quarterly Cup Run
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 */2 * *" # Runs every other day at midnight UTC
 
