@@ -36,3 +36,11 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Run with GPT-4o and AskNews
+        run: |
+          poetry run python main.py --llm openai/gpt-4o --skip_previous false --tournament_id 32630
+        env:
+          METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
