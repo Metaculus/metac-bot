@@ -1052,10 +1052,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run forecasting with specified LLM model')
     parser.add_argument('--llm', type=str, help='LLM model name to use for forecasting', default=None)
     parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests', default=5)
+    parser.add_argument('--skip_previous', type=bool, help='Override skip previously forecasted questions', default=SKIP_PREVIOUSLY_FORECASTED_QUESTIONS)
+    parser.add_argument('--tournament_id', type=int, help='Override tournament ID', default=TOURNAMENT_ID)
     args = parser.parse_args()
 
     LLM_MODEL_NAME = args.llm
     llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
+    SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = args.skip_previous
+    TOURNAMENT_ID = args.tournament_id
 
     if USE_EXAMPLE_QUESTIONS:
         open_question_id_post_id = EXAMPLE_QUESTIONS

@@ -10,7 +10,6 @@ jobs:
   daily_build:
     runs-on: ubuntu-latest
     steps:
-      # setup repository with all necessary dependencies
       - name: Check out repository
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -31,6 +30,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
       - name: Run with GPT-4o
+        id: bot1
         run: |
           poetry run python main.py --llm openai/gpt-4o
         env:
@@ -38,15 +38,29 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      - name: Run with o1-preview
+        continue-on-error: true
+      - name: Run with o1
+        id: bot2
         run: |
-          poetry run python main.py --llm openai/o1-preview
+          poetry run python main.py --llm openai/o1
         env:
           METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        continue-on-error: true
+      - name: Run with o1-preview
+        id: bot3
+        run: |
+          poetry run python main.py --llm openai/o1-preview
+        env:
+          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1_PREVIEW }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        continue-on-error: true
       - name: Run with Claude-3-5-sonnet-20240620
+        id: bot4
         run: |
           poetry run python main.py --llm anthropic/claude-3-5-sonnet-20240620
         env:
@@ -54,7 +68,9 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        continue-on-error: true
       - name: Run with Claude-3-5-sonnet-20241022
+        id: bot5
         run: |
           poetry run python main.py --llm anthropic/claude-3-5-sonnet-20241022
         env:
@@ -62,7 +78,9 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        continue-on-error: true
       - name: Run with Gemini-exp-1206
+        id: bot6
         run: |
           poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 2
         env:
@@ -70,7 +88,9 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        continue-on-error: true
       - name: Run with Grok-beta
+        id: bot7
         run: |
           poetry run python main.py --llm xai/grok-2-1212
         env:
@@ -78,7 +98,9 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        continue-on-error: true
       - name: Run with Meta-Llama-3.1-405B-Instruct-Turbo
+        id: bot8
         run: |
           poetry run python main.py --llm together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
         env:
@@ -86,3 +108,37 @@ jobs:
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
           TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+        continue-on-error: true
+      - name: Run with Exa
+        id: bot9
+        run: |
+          poetry run python main.py --llm openai/o1
+        env:
+          METACULUS_TOKEN: ${{ secrets.METAC_EXA_BOT }}
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        continue-on-error: true
+      - name: Run with Perplexity
+        id: bot10
+        run: |
+          poetry run python main.py --llm openai/o1
+        env:
+          METACULUS_TOKEN: ${{ secrets.METAC_PERPLEXITY_BOT }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        continue-on-error: true
+      - name: Fail Job if Step Actually Failed
+        run: |
+          has_failure=false
+          if [ "${{ steps.bot1.outcome }}" == "failure" ]; then echo "Bot1 (gpt-4o) failed"; has_failure=true; fi
+          if [ "${{ steps.bot2.outcome }}" == "failure" ]; then echo "Bot2 (o1) failed"; has_failure=true; fi
+          if [ "${{ steps.bot3.outcome }}" == "failure" ]; then echo "Bot3 (o1-preview) failed"; has_failure=true; fi
+          if [ "${{ steps.bot4.outcome }}" == "failure" ]; then echo "Bot4 (claude-3-5-sonnet-20240620) failed"; has_failure=true; fi
+          if [ "${{ steps.bot5.outcome }}" == "failure" ]; then echo "Bot5 (claude-3-5-sonnet-20241022) failed"; has_failure=true; fi
+          if [ "${{ steps.bot6.outcome }}" == "failure" ]; then echo "Bot6 (gemini-exp-1206) failed"; has_failure=true; fi
+          if [ "${{ steps.bot7.outcome }}" == "failure" ]; then echo "Bot7 (grok-2-1212) failed"; has_failure=true; fi
+          if [ "${{ steps.bot8.outcome }}" == "failure" ]; then echo "Bot8 (meta-llama-3.1-405b-instruct-turbo) failed"; has_failure=true; fi
+          if [ "${{ steps.bot9.outcome }}" == "failure" ]; then echo "Bot9 (exa) failed"; has_failure=true; fi
+          if [ "${{ steps.bot10.outcome }}" == "failure" ]; then echo "Bot10 (perplexity) failed"; has_failure=true; fi
+          if [ "$has_failure" = true ]; then exit 1; fi
+
