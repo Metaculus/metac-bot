@@ -30,7 +30,7 @@ jobs:
         run: poetry install --no-interaction --no-root
       - name: Run with o1 and AskNews
         run: |
-          poetry run python main.py --llm openai/o1 --skip_previous false --tournament_id 3672
+          poetry run python main.py --llm openai/o1 --skip_previous false --tournament_id 32630
         env:
           METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
