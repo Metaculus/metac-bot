@@ -82,7 +82,7 @@ jobs:
       - name: Run with Gemini-exp-1206
         id: bot6
         run: |
-          poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 2
+          poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 1
         env:
           METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
