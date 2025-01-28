@@ -5,6 +5,11 @@ on:
   schedule:
     - cron: "*/30 * * * *"
 
+# Add concurrency group to prevent parallel runs
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 # Daily job to run all bots
 jobs:
   daily_build:
@@ -127,6 +132,16 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         continue-on-error: true
+      - name: Run with DeepSeek-R1
+        id: bot11
+        run: |
+          poetry run python main.py --llm together_ai/deepseek-ai/DeepSeek-R1
+        env:
+          METACULUS_TOKEN: ${{ secrets.METAC_DEEPSEEK_R1 }}
+          TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+        continue-on-error: true
       - name: Fail Job if Step Actually Failed
         run: |
           has_failure=false
@@ -140,5 +155,5 @@ jobs:
           if [ "${{ steps.bot8.outcome }}" == "failure" ]; then echo "Bot8 (meta-llama-3.1-405b-instruct-turbo) failed"; has_failure=true; fi
           if [ "${{ steps.bot9.outcome }}" == "failure" ]; then echo "Bot9 (exa) failed"; has_failure=true; fi
           if [ "${{ steps.bot10.outcome }}" == "failure" ]; then echo "Bot10 (perplexity) failed"; has_failure=true; fi
+          if [ "${{ steps.bot11.outcome }}" == "failure" ]; then echo "Bot11 (deepseek-r1) failed"; has_failure=true; fi
           if [ "$has_failure" = true ]; then exit 1; fi
-
