@@ -4,6 +4,7 @@ import json
 import os
 import re
 import argparse
+import logging
 
 import numpy as np
 import requests
@@ -15,6 +16,9 @@ from litellm.types.utils import Choices
 import litellm
 from pydantic import BaseModel
 import forecasting_tools
+
+# Add this after imports, before CONSTANTS section
+logging.getLogger("LiteLLM").setLevel(logging.ERROR)
 
 ######################### CONSTANTS #########################
 # Constants
@@ -205,6 +209,11 @@ async def call_llm(prompt: str, temperature: float = 0.3) -> str:
     assert LLM_MODEL_NAME is not None
     litellm.drop_params = True
     assert llm_concurrency_semaphore is not None
+
+    if LLM_MODEL_NAME == "gemini/gemini-exp-1206":
+        context_window = 100000
+        prompt = prompt[:context_window]
+
     async with llm_concurrency_semaphore:
         response = await acompletion(
             model=LLM_MODEL_NAME,
@@ -243,7 +252,7 @@ def call_perplexity(question: str) -> str:
         "content-type": "application/json",
     }
     payload = {
-        "model": "llama-3.1-sonar-huge-128k-online",
+        "model": "sonar-pro",
         "messages": [
             {
                 "role": "system",  # this is a system prompt designed to guide the perplexity assistant
@@ -1074,3 +1083,4 @@ if __name__ == "__main__":
             SKIP_PREVIOUSLY_FORECASTED_QUESTIONS,
         )
     )
+
