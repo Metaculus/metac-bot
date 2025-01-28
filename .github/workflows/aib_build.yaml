@@ -11,6 +11,11 @@ concurrency:
   cancel-in-progress: false
 
 
+# Add concurrency group to prevent parallel runs
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 # Daily job to run all bots
 jobs:
   daily_build:
