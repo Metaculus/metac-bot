@@ -1,4 +1,4 @@
-name: Daily Quarterly Cup Run
+name: Quarterly Cup Run
 
 on:
   workflow_dispatch:

@@ -1,9 +1,14 @@
-name: Bi Hourly Build
+name: AI Benchmark Tournament Run
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/15 * * * *" # Runs every 15 minutes
+
+# Add concurrency group to prevent parallel runs
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 # Add concurrency group to prevent parallel runs
 concurrency:
