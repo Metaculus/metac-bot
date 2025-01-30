@@ -20,25 +20,25 @@ on:
         type: number
         default: 1
     secrets:
-      METACULUS_TOKEN:
+      INPUT_METACULUS_TOKEN:
         required: true
-      OPENAI_API_KEY:
+      INPUT_OPENAI_API_KEY:
         required: false
-      ANTHROPIC_API_KEY:
+      INPUT_ANTHROPIC_API_KEY:
         required: false
-      GEMINI_API_KEY:
+      INPUT_GEMINI_API_KEY:
         required: false
-      XAI_API_KEY:
+      INPUT_XAI_API_KEY:
         required: false
-      TOGETHERAI_API_KEY:
+      INPUT_TOGETHERAI_API_KEY:
         required: false
-      EXA_API_KEY:
+      INPUT_EXA_API_KEY:
         required: false
-      PERPLEXITY_API_KEY:
+      INPUT_PERPLEXITY_API_KEY:
         required: false
-      ASKNEWS_CLIENT_ID:
+      INPUT_ASKNEWS_CLIENT_ID:
         required: false
-      ASKNEWS_SECRET:
+      INPUT_ASKNEWS_SECRET:
         required: false
 
 jobs:
@@ -73,13 +73,13 @@ jobs:
         run: |
           poetry run python main.py --llm ${{ inputs.llm_path }} --concurrency ${{ inputs.concurrency }} --skip_previous ${{ inputs.skip_previous }} --tournament_id ${{ inputs.tournament_id }}
         env:
-          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
-          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          METACULUS_TOKEN: ${{ secrets.INPUT_METACULUS_TOKEN }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.INPUT_ASKNEWS_CLIENT_ID }}
+          ASKNEWS_SECRET: ${{ secrets.INPUT_ASKNEWS_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.INPUT_OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.INPUT_ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.INPUT_GEMINI_API_KEY }}
+          XAI_API_KEY: ${{ secrets.INPUT_XAI_API_KEY }}
+          TOGETHERAI_API_KEY: ${{ secrets.INPUT_TOGETHERAI_API_KEY }}
+          EXA_API_KEY: ${{ secrets.INPUT_EXA_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.INPUT_PERPLEXITY_API_KEY }}
