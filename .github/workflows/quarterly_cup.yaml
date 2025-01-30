@@ -11,23 +11,24 @@ jobs:
     with:
       bot_name: 'gpt-4o'
       llm_path: 'openai/gpt-4o'
-      skip_previous: False
+      skip_previous: 'False'
       tournament_id: 32630  # Q1_2025_QUARTERLY_CUP_ID
     secrets:
-      METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      INPUT_METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
+      INPUT_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      INPUT_ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      INPUT_ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
 
   bot_o1:
     uses: ./.github/workflows/bot-template.yaml
     with:
       bot_name: 'o1'
       llm_path: 'openai/o1'
-      skip_previous: False
+      skip_previous: 'False'
       tournament_id: 32630  # Q1_2025_QUARTERLY_CUP_ID
     secrets:
-      METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+      INPUT_METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
+      INPUT_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      INPUT_ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      INPUT_ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
