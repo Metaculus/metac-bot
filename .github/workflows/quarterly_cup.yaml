@@ -6,41 +6,28 @@ on:
     - cron: "0 0 */2 * *" # Runs every other day at midnight UTC
 
 jobs:
-  quarterly_cup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-      - name: Install poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-root
-      - name: Run with o1 and AskNews
-        run: |
-          poetry run python main.py --llm openai/o1 --skip_previous false --tournament_id 32630
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      - name: Run with GPT-4o and AskNews
-        run: |
-          poetry run python main.py --llm openai/gpt-4o --skip_previous false --tournament_id 32630
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  bot_gpt4o:
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'gpt-4o'
+      llm_path: 'openai/gpt-4o'
+      skip_previous: False
+      tournament_id: 32630  # Q1_2025_QUARTERLY_CUP_ID
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_o1:
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'o1'
+      llm_path: 'openai/o1'
+      skip_previous: False
+      tournament_id: 32630  # Q1_2025_QUARTERLY_CUP_ID
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}

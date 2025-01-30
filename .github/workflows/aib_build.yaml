@@ -3,163 +3,140 @@ name: AI Benchmark Tournament Run
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *" # Runs every 15 minutes
+    - cron: "*/15 * * * *"
 
-# Add concurrency group to prevent parallel runs
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
-
-# Add concurrency group to prevent parallel runs
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
 
 # Daily job to run all bots
 jobs:
-  daily_build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-      - name: Install poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-root
-      - name: Run with GPT-4o
-        id: bot1
-        run: |
-          poetry run python main.py --llm openai/gpt-4o
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with o1
-        id: bot2
-        run: |
-          poetry run python main.py --llm openai/o1
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with o1-preview
-        id: bot3
-        run: |
-          poetry run python main.py --llm openai/o1-preview
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1_PREVIEW }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Claude-3-5-sonnet-20240620
-        id: bot4
-        run: |
-          poetry run python main.py --llm anthropic/claude-3-5-sonnet-20240620
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_0620 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        continue-on-error: true
-      - name: Run with Claude-3-5-sonnet-20241022
-        id: bot5
-        run: |
-          poetry run python main.py --llm anthropic/claude-3-5-sonnet-20241022
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_SONNET_1022 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        continue-on-error: true
-      - name: Run with Gemini-exp-1206
-        id: bot6
-        run: |
-          poetry run python main.py --llm gemini/gemini-exp-1206 --concurrency 1
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Grok-beta
-        id: bot7
-        run: |
-          poetry run python main.py --llm xai/grok-2-1212
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_GROK_2_1212 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Meta-Llama-3.1-405B-Instruct-Turbo
-        id: bot8
-        run: |
-          poetry run python main.py --llm together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-          TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Exa
-        id: bot9
-        run: |
-          poetry run python main.py --llm openai/o1
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_EXA_BOT }}
-          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with Perplexity
-        id: bot10
-        run: |
-          poetry run python main.py --llm openai/o1
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_PERPLEXITY_BOT }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        continue-on-error: true
-      - name: Run with DeepSeek-R1
-        id: bot11
-        run: |
-          poetry run python main.py --llm together_ai/deepseek-ai/DeepSeek-R1
-        env:
-          METACULUS_TOKEN: ${{ secrets.METAC_DEEPSEEK_R1 }}
-          TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
-          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
-          ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
-        continue-on-error: true
-      - name: Fail Job if Step Actually Failed
-        run: |
-          has_failure=false
-          if [ "${{ steps.bot1.outcome }}" == "failure" ]; then echo "Bot1 (gpt-4o) failed"; has_failure=true; fi
-          if [ "${{ steps.bot2.outcome }}" == "failure" ]; then echo "Bot2 (o1) failed"; has_failure=true; fi
-          if [ "${{ steps.bot3.outcome }}" == "failure" ]; then echo "Bot3 (o1-preview) failed"; has_failure=true; fi
-          if [ "${{ steps.bot4.outcome }}" == "failure" ]; then echo "Bot4 (claude-3-5-sonnet-20240620) failed"; has_failure=true; fi
-          if [ "${{ steps.bot5.outcome }}" == "failure" ]; then echo "Bot5 (claude-3-5-sonnet-20241022) failed"; has_failure=true; fi
-          if [ "${{ steps.bot6.outcome }}" == "failure" ]; then echo "Bot6 (gemini-exp-1206) failed"; has_failure=true; fi
-          if [ "${{ steps.bot7.outcome }}" == "failure" ]; then echo "Bot7 (grok-2-1212) failed"; has_failure=true; fi
-          if [ "${{ steps.bot8.outcome }}" == "failure" ]; then echo "Bot8 (meta-llama-3.1-405b-instruct-turbo) failed"; has_failure=true; fi
-          if [ "${{ steps.bot9.outcome }}" == "failure" ]; then echo "Bot9 (exa) failed"; has_failure=true; fi
-          if [ "${{ steps.bot10.outcome }}" == "failure" ]; then echo "Bot10 (perplexity) failed"; has_failure=true; fi
-          if [ "${{ steps.bot11.outcome }}" == "failure" ]; then echo "Bot11 (deepseek-r1) failed"; has_failure=true; fi
-          if [ "$has_failure" = true ]; then exit 1; fi
+  bot_gpt4o:
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'gpt-4o'
+      llm_path: 'openai/gpt-4o'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GPT4O }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_o1:
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'o1'
+      llm_path: 'openai/o1'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1 }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_o1_preview:
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'o1-preview'
+      llm_path: 'openai/o1-preview'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GPT_O1_PREVIEW }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_claude_sonnet_0620:
+    needs: [bot_gpt4o]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'claude-3-5-sonnet-20240620'
+      llm_path: 'anthropic/claude-3-5-sonnet-20240620'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_SONNET_0620 }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_claude_sonnet_1022:
+    needs: [bot_gpt4o]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'claude-3-5-sonnet-20241022'
+      llm_path: 'anthropic/claude-3-5-sonnet-20241022'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_SONNET_1022 }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_gemini:
+    needs: [bot_gpt4o]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'gemini-exp-1206'
+      llm_path: 'gemini/gemini-exp-1206'
+      concurrency: 1
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_grok:
+    needs: [bot_claude_sonnet_1022]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'grok-2-1212'
+      llm_path: 'xai/grok-2-1212'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_GROK_2_1212 }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_llama:
+    needs: [bot_claude_sonnet_1022]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'meta-llama-3.1-405b'
+      llm_path: 'together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
+      TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_deepseek:
+    needs: [bot_claude_sonnet_1022]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'deepseek-r1'
+      llm_path: 'together_ai/deepseek-ai/DeepSeek-R1'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_DEEPSEEK_R1 }}
+      TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+      ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+      ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
+
+  bot_exa:
+    needs: [bot_claude_sonnet_1022]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'exa'
+      llm_path: 'openai/o1'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_EXA_BOT }}
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+  bot_perplexity:
+    needs: [bot_claude_sonnet_1022]
+    uses: ./.github/workflows/bot-template.yaml
+    with:
+      bot_name: 'perplexity'
+      llm_path: 'openai/o1'
+    secrets:
+      METACULUS_TOKEN: ${{ secrets.METAC_PERPLEXITY_BOT }}
+      PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+

@@ -1060,15 +1060,34 @@ async def forecast_questions(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run forecasting with specified LLM model')
     parser.add_argument('--llm', type=str, help='LLM model name to use for forecasting', default=None)
-    parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests', default=5)
-    parser.add_argument('--skip_previous', type=bool, help='Override skip previously forecasted questions', default=SKIP_PREVIOUSLY_FORECASTED_QUESTIONS)
+    parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests')
+    parser.add_argument('--skip_previous', type=str, help='Override skip previously forecasted questions')
     parser.add_argument('--tournament_id', type=int, help='Override tournament ID', default=TOURNAMENT_ID)
     args = parser.parse_args()
 
+    if EXA_API_KEY is not None:
+        assert PERPLEXITY_API_KEY is None, "Cannot use both EXA and Perplexity"
+        assert ASKNEWS_CLIENT_ID is None, "Cannot use both EXA and AskNews"
+        assert ASKNEWS_SECRET is None, "Cannot use both EXA and AskNews"
+        assert OPENAI_API_KEY is not None, "Need OpenAI API key for EXA"
+    elif PERPLEXITY_API_KEY is not None:
+        assert EXA_API_KEY is None, "Cannot use both Perplexity and EXA"
+        assert ASKNEWS_CLIENT_ID is None, "Cannot use both Perplexity and AskNews"
+        assert ASKNEWS_SECRET is None, "Cannot use both Perplexity and AskNews"
+    elif ASKNEWS_CLIENT_ID is not None:
+        assert EXA_API_KEY is None, "Cannot use both AskNews and EXA"
+        assert PERPLEXITY_API_KEY is None, "Cannot use both AskNews and Perplexity"
+        assert ASKNEWS_SECRET is None, "Cannot use both AskNews and AskNews"
+
+    if args.skip_previous:
+        assert args.skip_previous in ["True", "False"], "Invalid value for skip_previous. Please use 'True' or 'False'."
+        SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = args.skip_previous == "True"
     LLM_MODEL_NAME = args.llm
     llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
-    SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = args.skip_previous
-    TOURNAMENT_ID = args.tournament_id
+    if args.tournament_id is None or args.tournament_id == 0:
+        TOURNAMENT_ID = TOURNAMENT_ID # NOSONAR
+    else:
+        TOURNAMENT_ID = args.tournament_id
 
     if USE_EXAMPLE_QUESTIONS:
         open_question_id_post_id = EXAMPLE_QUESTIONS
