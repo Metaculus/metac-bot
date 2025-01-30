@@ -36,12 +36,12 @@ ASKNEWS_CLIENT_ID = os.getenv("ASKNEWS_CLIENT_ID")
 ASKNEWS_SECRET = os.getenv("ASKNEWS_SECRET")
 EXA_API_KEY = os.getenv("EXA_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # You'll also need the OpenAI API Key if you want to use the Exa Smart Searcher
-print(f"METACULUS_TOKEN: {METACULUS_TOKEN[:3] if METACULUS_TOKEN else 'None'}")
-print(f"PERPLEXITY_API_KEY: {PERPLEXITY_API_KEY[:3] if PERPLEXITY_API_KEY else 'None'}")
-print(f"ASKNEWS_CLIENT_ID: {ASKNEWS_CLIENT_ID[:3] if ASKNEWS_CLIENT_ID else 'None'}")
-print(f"ASKNEWS_SECRET: {ASKNEWS_SECRET[:3] if ASKNEWS_SECRET else 'None'}")
-print(f"EXA_API_KEY: {EXA_API_KEY[:3] if EXA_API_KEY else 'None'}")
-print(f"OPENAI_API_KEY: {OPENAI_API_KEY[:3] if OPENAI_API_KEY else 'None'}")
+print(f"METACULUS_TOKEN: {METACULUS_TOKEN[:3] if METACULUS_TOKEN else 'None'}. Type: {type(METACULUS_TOKEN)}")
+print(f"PERPLEXITY_API_KEY: {PERPLEXITY_API_KEY[:3] if PERPLEXITY_API_KEY else 'None'}. Type: {type(PERPLEXITY_API_KEY)}")
+print(f"ASKNEWS_CLIENT_ID: {ASKNEWS_CLIENT_ID[:3] if ASKNEWS_CLIENT_ID else 'None'}. Type: {type(ASKNEWS_CLIENT_ID)}")
+print(f"ASKNEWS_SECRET: {ASKNEWS_SECRET[:3] if ASKNEWS_SECRET else 'None'}. Type: {type(ASKNEWS_SECRET)}")
+print(f"EXA_API_KEY: {EXA_API_KEY[:3] if EXA_API_KEY else 'None'}. Type: {type(EXA_API_KEY)}")
+print(f"OPENAI_API_KEY: {OPENAI_API_KEY[:3] if OPENAI_API_KEY else 'None'}. Type: {type(OPENAI_API_KEY)}")
 
 
 # The tournament IDs below can be used for testing your bot.
@@ -1084,7 +1084,7 @@ if __name__ == "__main__":
     elif ASKNEWS_CLIENT_ID is not None:
         assert EXA_API_KEY is None, "Cannot use both AskNews and EXA"
         assert PERPLEXITY_API_KEY is None, "Cannot use both AskNews and Perplexity"
-        assert ASKNEWS_SECRET is None, "Cannot use both AskNews and AskNews"
+        assert ASKNEWS_SECRET is not None, "Must provide AskNews secret"
 
     if args.skip_previous:
         assert args.skip_previous in ["True", "False"], "Invalid value for skip_previous. Please use 'True' or 'False'."
