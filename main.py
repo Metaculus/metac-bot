@@ -30,18 +30,12 @@ GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
 LLM_MODEL_NAME: str | None = None
 
 # Environment variables
-METACULUS_TOKEN = os.getenv("METACULUS_TOKEN")
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
-ASKNEWS_CLIENT_ID = os.getenv("ASKNEWS_CLIENT_ID")
-ASKNEWS_SECRET = os.getenv("ASKNEWS_SECRET")
-EXA_API_KEY = os.getenv("EXA_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # You'll also need the OpenAI API Key if you want to use the Exa Smart Searcher
-print(f"METACULUS_TOKEN: {METACULUS_TOKEN[:3] if METACULUS_TOKEN else 'None'}. Type: {type(METACULUS_TOKEN)}")
-print(f"PERPLEXITY_API_KEY: {PERPLEXITY_API_KEY[:3] if PERPLEXITY_API_KEY else 'None'}. Type: {type(PERPLEXITY_API_KEY)}")
-print(f"ASKNEWS_CLIENT_ID: {ASKNEWS_CLIENT_ID[:3] if ASKNEWS_CLIENT_ID else 'None'}. Type: {type(ASKNEWS_CLIENT_ID)}")
-print(f"ASKNEWS_SECRET: {ASKNEWS_SECRET[:3] if ASKNEWS_SECRET else 'None'}. Type: {type(ASKNEWS_SECRET)}")
-print(f"EXA_API_KEY: {EXA_API_KEY[:3] if EXA_API_KEY else 'None'}. Type: {type(EXA_API_KEY)}")
-print(f"OPENAI_API_KEY: {OPENAI_API_KEY[:3] if OPENAI_API_KEY else 'None'}. Type: {type(OPENAI_API_KEY)}")
+METACULUS_TOKEN = os.getenv("METACULUS_TOKEN") or None
+PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY") or None
+ASKNEWS_CLIENT_ID = os.getenv("ASKNEWS_CLIENT_ID") or None
+ASKNEWS_SECRET = os.getenv("ASKNEWS_SECRET") or None
+EXA_API_KEY = os.getenv("EXA_API_KEY") or None
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or None  # You'll need the OpenAI API Key if you want to use the Exa Smart Searcher
 
 
 # The tournament IDs below can be used for testing your bot.
