@@ -1085,7 +1085,7 @@ if __name__ == "__main__":
         SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = args.skip_previous == "True"
     LLM_MODEL_NAME = args.llm
     llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
-    if args.tournament_id is None or args.tournament_id == 0:
+    if args.tournament_id is None or args.tournament_id == 1:
         TOURNAMENT_ID = TOURNAMENT_ID # NOSONAR
     else:
         TOURNAMENT_ID = args.tournament_id
