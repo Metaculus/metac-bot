@@ -21,6 +21,7 @@ on:
         default: 1
       call_very_slowly:
         required: false
+        type: string
         default: "False"
     secrets:
       INPUT_METACULUS_TOKEN:
