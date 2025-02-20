@@ -73,6 +73,7 @@ jobs:
       bot_name: 'gemini-exp-1206'
       llm_path: 'gemini/gemini-exp-1206'
       concurrency: 1
+      call_very_slowly: "True"
     secrets:
       INPUT_METACULUS_TOKEN: ${{ secrets.METAC_GEMINI_EXP_1206 }}
       INPUT_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -94,10 +95,10 @@ jobs:
     uses: ./.github/workflows/bot-template.yaml
     with:
       bot_name: 'meta-llama-3.1-405b'
-      llm_path: 'together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo'
+      llm_path: 'openrouter/meta-llama/llama-3.1-405b-instruct'
     secrets:
       INPUT_METACULUS_TOKEN: ${{ secrets.METAC_LLAMA_3_1 }}
-      INPUT_TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+      INPUT_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       INPUT_ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
       INPUT_ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
 
@@ -105,10 +106,10 @@ jobs:
     uses: ./.github/workflows/bot-template.yaml
     with:
       bot_name: 'deepseek-r1'
-      llm_path: 'together_ai/deepseek-ai/DeepSeek-R1'
+      llm_path: 'openrouter/deepseek/deepseek-r1'
     secrets:
       INPUT_METACULUS_TOKEN: ${{ secrets.METAC_DEEPSEEK_R1 }}
-      INPUT_TOGETHERAI_API_KEY: ${{ secrets.TOGETHERAI_API_KEY }}
+      INPUT_OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       INPUT_ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
       INPUT_ASKNEWS_SECRET: ${{ secrets.ASKNEWS_SECRET }}
 
