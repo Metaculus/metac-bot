@@ -1,4 +1,4 @@
-name: Quarterly Cup Run
+name: Quarterly Cup Build/Run
 
 on:
   workflow_dispatch:

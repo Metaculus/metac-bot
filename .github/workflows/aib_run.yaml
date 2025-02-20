@@ -1,4 +1,4 @@
-name: AI Benchmark Tournament Run
+name: AI Benchmark Tournament Build/Run
 
 on:
   workflow_dispatch:
