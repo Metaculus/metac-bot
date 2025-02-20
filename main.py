@@ -16,6 +16,7 @@ from litellm.types.utils import Choices
 import litellm
 from pydantic import BaseModel
 import forecasting_tools
+from forecasting_tools.ai_models.resource_managers.refreshing_bucket_rate_limiter import RefreshingBucketRateLimiter
 
 # Add this after imports, before CONSTANTS section
 logging.getLogger("LiteLLM").setLevel(logging.ERROR)
@@ -28,6 +29,7 @@ NUM_RUNS_PER_QUESTION = 5  # The median forecast is taken between NUM_RUNS_PER_Q
 SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = True
 GET_NEWS = True  # set to True to enable AskNews after entering ASKNEWS secrets
 LLM_MODEL_NAME: str | None = None
+CALL_VERY_SLOWLY = False
 
 # Environment variables
 METACULUS_TOKEN = os.getenv("METACULUS_TOKEN") or None
@@ -205,6 +207,10 @@ def get_post_details(post_id: int) -> dict:
 
 
 llm_concurrency_semaphore: asyncio.Semaphore | None = None
+rate_limiter = RefreshingBucketRateLimiter(
+    capacity=1,
+    refresh_rate=0.05,
+)
 
 async def call_llm(prompt: str, temperature: float = 0.3) -> str:
     assert LLM_MODEL_NAME is not None
@@ -214,6 +220,9 @@ async def call_llm(prompt: str, temperature: float = 0.3) -> str:
     if LLM_MODEL_NAME == "gemini/gemini-exp-1206":
         context_window = 100000
         prompt = prompt[:context_window]
+
+    if CALL_VERY_SLOWLY:
+        await rate_limiter.wait_till_able_to_acquire_resources(1)
 
     async with llm_concurrency_semaphore:
         response = await acompletion(
@@ -1062,6 +1071,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run forecasting with specified LLM model')
     parser.add_argument('--llm', type=str, help='LLM model name to use for forecasting', default=None)
     parser.add_argument('--concurrency', type=int, help='Number of concurrent LLM requests')
+    parser.add_argument('--call_very_slowly', type=str, help='Make llm requests very slowly')
     parser.add_argument('--skip_previous', type=str, help='Override skip previously forecasted questions')
     parser.add_argument('--tournament_id', type=int, help='Override tournament ID', default=TOURNAMENT_ID)
     args = parser.parse_args()
@@ -1083,6 +1093,10 @@ if __name__ == "__main__":
     if args.skip_previous:
         assert args.skip_previous in ["True", "False"], "Invalid value for skip_previous. Please use 'True' or 'False'."
         SKIP_PREVIOUSLY_FORECASTED_QUESTIONS = args.skip_previous == "True"
+    if args.call_very_slowly:
+        assert args.call_very_slowly in ["True", "False"], "Invalid value for call_very_slowly. Please use 'True' or 'False'."
+        CALL_VERY_SLOWLY = args.call_very_slowly == "True"
+
     LLM_MODEL_NAME = args.llm
     llm_concurrency_semaphore = asyncio.Semaphore(args.concurrency)
     if args.tournament_id is None or args.tournament_id == 1:
